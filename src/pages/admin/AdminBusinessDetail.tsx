@@ -18,6 +18,7 @@ import {
 } from "@/components/admin/BusinessStatusPill";
 import { formatCurrency, formatDate, formatRelative } from "@/lib/format";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import BusinessDocuments from "@/components/admin/BusinessDocuments";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -197,10 +198,7 @@ export default function AdminBusinessDetail() {
             />
           </TabsContent>
           <TabsContent value="documents" className="mt-0">
-            <PlaceholderPanel
-              title="Documents"
-              body="Secure document upload, visibility controls and per-buyer overrides will appear here."
-            />
+            <BusinessDocuments businessId={b.id} />
           </TabsContent>
           <TabsContent value="financials" className="mt-0">
             <Financials b={b} />
