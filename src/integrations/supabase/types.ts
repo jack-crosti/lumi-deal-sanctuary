@@ -23,11 +23,13 @@ export type Database = {
           error_message: string | null
           id: string
           instruction: string
+          proposal: Json | null
           result_preview: string | null
           status: Database["public"]["Enums"]["ai_edit_status"]
           target_block_id: string | null
           updated_at: string
           version_id: string | null
+          warnings: string[]
         }
         Insert: {
           admin_id: string
@@ -37,11 +39,13 @@ export type Database = {
           error_message?: string | null
           id?: string
           instruction: string
+          proposal?: Json | null
           result_preview?: string | null
           status?: Database["public"]["Enums"]["ai_edit_status"]
           target_block_id?: string | null
           updated_at?: string
           version_id?: string | null
+          warnings?: string[]
         }
         Update: {
           admin_id?: string
@@ -51,11 +55,13 @@ export type Database = {
           error_message?: string | null
           id?: string
           instruction?: string
+          proposal?: Json | null
           result_preview?: string | null
           status?: Database["public"]["Enums"]["ai_edit_status"]
           target_block_id?: string | null
           updated_at?: string
           version_id?: string | null
+          warnings?: string[]
         }
         Relationships: []
       }
