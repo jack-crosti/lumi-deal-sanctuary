@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import BuyerDocuments from "@/components/buyer/BuyerDocuments";
+import OfferDiscussionDialog from "@/components/buyer/OfferDiscussionDialog";
 import { formatCurrency } from "@/lib/format";
 import { ACCESS_LEVEL_OPTIONS, type AccessLevel } from "@/lib/buyerLabels";
 import {
