@@ -129,13 +129,13 @@ export default function BuyerBusiness() {
     if (!businessId || !user) return;
     (async () => {
       const [{ data: biz, error: bizErr }, { data: access }] = await Promise.all([
+        // Server-side RPC: returns financial fields and exact address only when
+        // the buyer's access level / location_mode permits. UI gating is no
+        // longer the only barrier — restricted columns arrive as NULL.
         supabase
-          .from("businesses")
-          .select(
-            "id,name,public_title,confidential_title,headline,summary,business_type,industry,location_mode,suburb,city,region,address,asking_price,ebitda,normalised_profit,revenue,stock_value,weekly_sales_min,weekly_sales_max,rent_per_year,lease_expiry,renewal_rights,tenure,staff_summary,owner_involvement,opening_hours,hero_image_url,gross_profit,gross_profit_pct,wage_cost,wage_pct,rent_pct_sales,owner_profit,add_backs,asking_price_multiple,financial_notes,financial_source,financial_review_status"
-          )
-          .eq("id", businessId)
-          .maybeSingle(),
+          .rpc("get_buyer_business", { _business_id: businessId })
+          .maybeSingle()
+          .then((r) => ({ data: r.data, error: r.error })),
         supabase
           .from("buyer_business_access")
           .select("access_level")
@@ -148,7 +148,13 @@ export default function BuyerBusiness() {
         setDenied(true);
       } else {
         setBusiness(biz as BusinessDetail);
-        setAccessLevel((access?.access_level as AccessLevel) ?? "teaser");
+        // Prefer access level returned by RPC (admins get full_dd); fall back
+        // to the buyer_business_access table for completeness.
+        const lvl =
+          ((biz as unknown as { access_level?: AccessLevel }).access_level) ??
+          (access?.access_level as AccessLevel | undefined) ??
+          "teaser";
+        setAccessLevel(lvl);
       }
       setLoading(false);
     })();
