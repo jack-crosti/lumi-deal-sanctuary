@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Search, Pencil, Eye, Users, Upload, Globe2, Archive, MoreHorizontal } from "lucide-react";
+import { Plus, Search, Pencil, Eye, Users, Upload, Globe2, Archive, MoreHorizontal, Sparkles } from "lucide-react";
 import { PageHeader, PlaceholderPanel } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import CreateFromIMDialog from "@/components/admin/CreateFromIMDialog";
 
 interface BusinessRow {
   id: string;
@@ -43,6 +44,7 @@ export default function AdminBusinesses() {
   const [accessCounts, setAccessCounts] = useState<Record<string, number>>({});
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [query, setQuery] = useState("");
+  const [showImport, setShowImport] = useState(false);
 
   const load = async () => {
     const { data, error } = await supabase
@@ -117,12 +119,23 @@ export default function AdminBusinesses() {
         title="Businesses"
         description="Every active, draft and archived listing under your custody."
         actions={
-          <Link to="/admin/businesses/new" className="lumi-btn-primary">
-            <Plus className="h-3.5 w-3.5" />
-            New listing
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowImport(true)}
+              className="lumi-btn-ghost"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Import from PDF</span>
+            </button>
+            <Link to="/admin/businesses/new" className="lumi-btn-primary">
+              <Plus className="h-3.5 w-3.5" />
+              New listing
+            </Link>
+          </div>
         }
       />
+
+      <CreateFromIMDialog open={showImport} onOpenChange={setShowImport} />
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
