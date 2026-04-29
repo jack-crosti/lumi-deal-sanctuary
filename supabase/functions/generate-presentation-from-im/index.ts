@@ -292,6 +292,7 @@ Build the draft presentation now. Cover all of these block types in order: ${TAR
     const aiJson = await aiResp.json();
     const toolCall = aiJson.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) {
+      console.error("AI response missing tool_calls", JSON.stringify(aiJson).slice(0, 2000));
       const msg = "AI did not return a structured response";
       await admin
         .from("im_imports")
@@ -313,8 +314,16 @@ Build the draft presentation now. Cover all of these block types in order: ${TAR
       confidentiality_flags: string[];
     };
     try {
-      parsed = JSON.parse(toolCall.function.arguments);
-    } catch {
+      const args = toolCall.function?.arguments ?? toolCall.arguments;
+      parsed = typeof args === "string" ? JSON.parse(args) : args;
+      if (!parsed || typeof parsed !== "object") throw new Error("empty");
+      if (!Array.isArray(parsed.blocks)) parsed.blocks = [];
+      if (!Array.isArray(parsed.warnings)) parsed.warnings = [];
+      if (!Array.isArray(parsed.confidentiality_flags)) parsed.confidentiality_flags = [];
+      if (!parsed.facts || typeof parsed.facts !== "object")
+        parsed.facts = {} as Record<string, unknown>;
+    } catch (parseErr) {
+      console.error("AI tool args parse failed", parseErr, toolCall);
       const msg = "AI response was not valid JSON";
       await admin
         .from("im_imports")
