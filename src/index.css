@@ -138,3 +138,9 @@ All colors MUST be HSL.
   .shadow-cinema { box-shadow: var(--shadow-cinema); }
   .shadow-vault  { box-shadow: var(--shadow-vault); }
 }
+
+@layer components {
+  .lumi-input {
+    @apply w-full bg-background/60 border hairline rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/30 transition-colors;
+  }
+}
