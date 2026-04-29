@@ -287,6 +287,31 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
+function BuyerIntent({ buyerId }: { buyerId: string }) {
+  const [breakdown, setBreakdown] = useState<ReturnType<typeof computeIntentScore> | null>(null);
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("buyer_activity")
+        .select("id, created_at, event_type, business_id, buyer_id, metadata")
+        .eq("buyer_id", buyerId)
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      const list = (data ?? []) as unknown as ActivityRow[];
+      setBreakdown(computeIntentScore(list));
+    })();
+  }, [buyerId]);
+  if (!breakdown) {
+    return <div className="lumi-card p-12 text-center text-sm text-muted-foreground">Calculating intent…</div>;
+  }
+  return (
+    <IntentScoreCard
+      breakdown={breakdown}
+      suggestedAction={suggestedNextAction(breakdown)}
+    />
+  );
+}
+
 function DefinitionList({ rows }: { rows: [string, string | null | undefined][] }) {
   return (
     <dl className="divide-y hairline border-t hairline">
