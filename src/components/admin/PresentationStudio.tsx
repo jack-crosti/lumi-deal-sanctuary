@@ -509,6 +509,12 @@ export default function PresentationStudio({ businessId }: Props) {
             setShowAIWorkspace(false);
             setEditing(b);
           }}
+          onBlockUpdated={(updated) => {
+            setBlocks((prev) =>
+              prev ? prev.map((x) => (x.id === updated.id ? updated : x)) : prev,
+            );
+            setHistoryKey((k) => k + 1);
+          }}
         />
       )}
     </div>
