@@ -423,13 +423,13 @@ function PullStat({
       ? "text-5xl md:text-7xl"
       : "text-4xl md:text-5xl";
   return (
-    <div className="border-t hairline pt-6">
+    <div className="border-t hairline pt-6 transition-transform duration-500 ease-out motion-safe:hover:-translate-y-0.5">
       <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-4 flex items-center gap-2">
         {locked && <Lock className="h-3 w-3 text-primary/60" />}
         {label}
       </div>
       <div
-        className={`lumi-stat ${sizeClass} ${
+        className={`lumi-stat ${sizeClass} transition-colors duration-500 ${
           locked ? "text-muted-foreground/50" : "text-foreground"
         }`}
       >
