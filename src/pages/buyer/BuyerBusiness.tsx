@@ -1481,6 +1481,7 @@ function OfferSection({
   businessName: string;
 }) {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <section
