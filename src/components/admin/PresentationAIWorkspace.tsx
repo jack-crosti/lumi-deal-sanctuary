@@ -13,6 +13,7 @@ interface Props {
   onClose: () => void;
   onToggleHidden: (block: BlockRow) => void;
   onEdit: (block: BlockRow) => void;
+  onBlockUpdated?: (block: BlockRow) => void;
 }
 
 export default function PresentationAIWorkspace({
@@ -23,6 +24,7 @@ export default function PresentationAIWorkspace({
   onClose,
   onToggleHidden,
   onEdit,
+  onBlockUpdated,
 }: Props) {
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const visibleBlocks = blocks.filter((b) => !b.is_hidden);
@@ -62,6 +64,7 @@ export default function PresentationAIWorkspace({
             blocks={blocks}
             selectedBlockId={selectedBlockId}
             onSelectBlock={setSelectedBlockId}
+            onBlockUpdated={onBlockUpdated}
           />
         </aside>
 
