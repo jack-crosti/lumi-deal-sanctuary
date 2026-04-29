@@ -6,7 +6,7 @@ export default function AdminActivity() {
       <PageHeader
         eyebrow="Audit trail"
         title="Activity"
-        description="Every login, view, document open and download — across every buyer and every mandate."
+        description="Every login, view, document open and download — across every buyer and every Information Memorandum."
       />
       <PlaceholderPanel
         title="Activity stream coming next"

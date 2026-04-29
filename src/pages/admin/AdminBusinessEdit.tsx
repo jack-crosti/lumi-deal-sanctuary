@@ -67,7 +67,7 @@ export default function AdminBusinessEdit() {
   return (
     <>
       <PageHeader
-        eyebrow="Edit mandate"
+        eyebrow="Edit Information Memorandum"
         title={initial?.name || "Edit listing"}
         description="Refine the details. Changes are saved to the listing record."
         actions={

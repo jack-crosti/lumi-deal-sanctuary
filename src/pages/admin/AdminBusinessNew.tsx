@@ -7,7 +7,7 @@ export default function AdminBusinessNew() {
   return (
     <>
       <PageHeader
-        eyebrow="New mandate"
+        eyebrow="New Information Memorandum"
         title="Create a business"
         description="Capture the identity, confidentiality, financials and lease terms. You can refine each section after creation."
         actions={

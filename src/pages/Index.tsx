@@ -47,7 +47,7 @@ const Index = () => {
         <div className="mx-auto max-w-[1400px] px-6 md:px-12 h-20 flex items-center justify-between">
           <Wordmark className="text-lg animate-fade-cinema" />
           <nav className="hidden md:flex items-center gap-12 text-[10px] tracking-eyebrow uppercase text-muted-foreground">
-            <a href="#mandate" className="lumi-link hover:text-foreground">Our mandate</a>
+            <a href="#approach" className="lumi-link hover:text-foreground">Our approach</a>
             <a href="#process" className="lumi-link hover:text-foreground">Process</a>
             <a href="#assurance" className="lumi-link hover:text-foreground">Assurance</a>
           </nav>
@@ -118,7 +118,7 @@ const Index = () => {
             <div className="mt-20 grid grid-cols-3 gap-8 max-w-xl animate-rise delay-700">
               {[
                 { v: "184", k: "Vetted buyers" },
-                { v: "12", k: "Active mandates" },
+                { v: "12", k: "Active Information Memorandums" },
                 { v: "21d", k: "Avg. to LOI" },
               ].map((s) => (
                 <div key={s.k} className="border-l hairline-strong pl-5">
@@ -151,7 +151,7 @@ const Index = () => {
               {/* caption */}
               <div className="absolute left-6 right-6 bottom-6">
                 <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-primary mb-2 animate-shimmer">
-                  Confidential mandate · No. 037
+                  Confidential Information Memorandum · No. 037
                 </div>
                 <div className="font-display text-xl md:text-2xl leading-tight">
                   An award-winning city restaurant.
@@ -174,19 +174,19 @@ const Index = () => {
       </section>
 
       {/* ============================================================ */}
-      {/* MANDATE — quote / editorial */}
+      {/* APPROACH — quote / editorial */}
       {/* ============================================================ */}
-      <section id="mandate" className="relative border-t hairline">
+      <section id="approach" className="relative border-t hairline">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.02] to-transparent pointer-events-none" />
         <div className="relative mx-auto max-w-[1400px] px-6 md:px-12 py-32 md:py-40">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
             <div className="lg:col-span-4">
               <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-6">
-                Our mandate
+                Our approach
               </div>
               <div className="lumi-stat text-6xl md:text-7xl text-gradient-gold">037</div>
               <div className="mt-3 font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground">
-                Mandates closed since 2019
+                Information Memorandums closed since 2019
               </div>
             </div>
             <div className="lg:col-span-8">

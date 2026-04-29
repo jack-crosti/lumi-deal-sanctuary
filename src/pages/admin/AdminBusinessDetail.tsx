@@ -136,7 +136,7 @@ export default function AdminBusinessDetail() {
   return (
     <>
       <PageHeader
-        eyebrow={b.business_type || "Mandate"}
+        eyebrow={b.business_type || "Information Memorandum"}
         title={title}
         actions={
           <div className="flex items-center gap-2">
@@ -209,7 +209,7 @@ export default function AdminBusinessDetail() {
           <TabsContent value="buyer-access" className="mt-0">
             <PlaceholderPanel
               title="Buyer Access"
-              body="Assign approved buyers to this mandate and choose their access level: Teaser, IM, Financial, Serious, or Full DD."
+              body="Assign approved buyers to this Information Memorandum and choose their access level: Teaser, IM, Financial, Serious, or Full DD."
             />
           </TabsContent>
           <TabsContent value="activity" className="mt-0">

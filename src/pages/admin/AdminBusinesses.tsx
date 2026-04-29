@@ -113,7 +113,7 @@ export default function AdminBusinesses() {
   return (
     <>
       <PageHeader
-        eyebrow="Mandates"
+        eyebrow="Information Memorandums"
         title="Businesses"
         description="Every active, draft and archived listing under your custody."
         actions={

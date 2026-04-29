@@ -73,7 +73,7 @@ export default function BuyerDashboard() {
       <PageHeader
         eyebrow="Private channel"
         title="Your assigned opportunities."
-        description={`Signed in as ${user?.email}. Only mandates personally shared with you appear here.`}
+        description={`Signed in as ${user?.email}. Only Information Memorandums personally shared with you appear here.`}
       />
 
       {items === null ? (
@@ -210,7 +210,7 @@ function EmptyState() {
           You do not currently have access to any business opportunities.
         </h2>
         <p className="text-sm md:text-base text-muted-foreground leading-[1.8]">
-          If you are expecting access, please contact your broker. New mandates will appear here the moment they are shared with you.
+          If you are expecting access, please contact your broker. New Information Memorandums will appear here the moment they are shared with you.
         </p>
       </div>
     </div>
