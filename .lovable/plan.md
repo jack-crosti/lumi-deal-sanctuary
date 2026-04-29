@@ -1,58 +1,54 @@
-# Fix: clear distinction between Admin & Buyer (and signed-in vs signed-out)
+I understand. The current blocker is not the password: `jack@lumi.nz` exists and is already assigned the admin role. The app is getting stuck because the frontend waits on a database role lookup after login, and that lookup is intermittently returning `503 / schema cache retrying`, so the route guard keeps showing “Verifying access…” or eventually sends you to the wrong place.
 
-The current app makes it hard to tell what mode you're in. Jack signed in as admin but the experience feels generic. Three concrete problems, three concrete fixes.
+I will simplify and harden the login flow now.
 
-## Problem 1 — The landing page doesn't know you're signed in
+## Plan
 
-Right now `/` (the marketing page) renders the same way whether you're signed out, an admin, or a buyer. The "Enter deal room" button works, but the page itself gives zero signal that you're authenticated. If you click the wordmark from inside the console, you bounce back to marketing and feel logged out.
+1. Replace the fragile post-login role lookup for routing
+   - Make the app determine the active area directly from the signed-in email:
+     - `jack@lumi.nz` → Admin
+     - every other signed-in email → Buyer
+   - Keep the existing `user_roles` table and database RLS policies in place for backend protection.
+   - Stop the UI from depending on `user_roles` just to decide which page to load.
 
-**Fix:** Auto-redirect signed-in users away from `/`.
-- If `session && role === "admin"` → redirect to `/admin/dashboard`
-- If `session && role === "buyer"` → redirect to `/buyer/dashboard`
-- Signed-out visitors keep seeing the marketing page exactly as it is.
+2. Fix the “Verifying access…” loop
+   - Update `useAuth` so initial auth loading only waits for the actual session, not a separate database role request.
+   - Remove the retry loop that can keep the user stuck for too long.
+   - Ensure the role is immediately available from the session email once login succeeds.
 
-This is the same pattern already used on `/login` via `RedirectIfAuthed`. We'll wrap `/` with it too.
+3. Make the login page clearer
+   - Keep one simple login page at `/login`.
+   - Add clear UI copy explaining:
+     - `jack@lumi.nz` opens the Admin broker console.
+     - other approved accounts open the Buyer private channel.
+   - After login, navigate directly to the correct dashboard instead of bouncing through `/`.
 
-## Problem 2 — The console header doesn't show who/what you are
+4. Make route guards deterministic
+   - `/admin/*` allows only `jack@lumi.nz`.
+   - `/buyer/*` allows any signed-in non-admin email.
+   - If an admin lands on buyer routes, send them to `/admin/dashboard`.
+   - If a buyer lands on admin routes, send them to `/buyer/dashboard` or `/unauthorized` with a clear message.
 
-Currently `AppShell` shows a tiny grey "Admin Console" eyebrow and the email in muted monospace. Easy to miss.
+5. Reduce confusing unauthorized states
+   - Update the unauthorized page copy so it explains which account is signed in and where it should go.
+   - Make the “Back to your deal room” button route to the correct dashboard based on email.
 
-**Fix:** Add a clear, prominent role badge in the header.
+6. Test after changes
+   - Run the app test suite.
+   - Verify the affected files compile through the automatic checks.
+   - Manually review the expected flows:
+     - `jack@lumi.nz` login → `/admin/dashboard`
+     - other email login → `/buyer/dashboard`
+     - logged-out admin route → `/login`
+     - buyer trying admin route → no admin access
 
-```text
-┌────────────────────────────────────────────────────────────────┐
-│  LUMI │ ● ADMIN CONSOLE     [nav]     jack@lumi.nz  [Sign out] │
-└────────────────────────────────────────────────────────────────┘
-       └─ gold pill, role-coloured  └─ avatar circle with initial
-```
+## Technical details
 
-Specifically:
-- **Role pill** next to the wordmark — gold/primary background for Admin, muted/silver for Buyer. Clearly labelled "ADMIN" or "BUYER".
-- **Avatar circle** with the user's initial next to their email, so it feels like an account, not a label.
-- **Thin top accent bar** in primary gold for Admin, neutral hairline for Buyer — a subtle but instant visual cue.
-- **Wordmark no longer links to `/`** when you're inside the console — it links to your own dashboard (`/admin/dashboard` or `/buyer/dashboard`). No more accidental "logged out feeling" bounces.
+Files to update:
+- `src/hooks/useAuth.tsx`
+- `src/components/RouteGuards.tsx`
+- `src/pages/Auth.tsx`
+- `src/pages/Unauthorized.tsx`
+- possibly `src/pages/Index.tsx` if it still relies on the old role lookup
 
-## Problem 3 — Admin and Buyer feel identical
-
-Same shell, same colours, same layout. Beyond the nav items, nothing distinguishes them.
-
-**Fix:** Tint the Admin chrome with primary gold accents and tag the Buyer chrome as a "Private channel".
-- Admin header: gold accent line at top, gold role pill, "Broker console" eyebrow.
-- Buyer header: neutral accent line, silver role pill, "Private buyer channel" eyebrow.
-- The body content stays as it is — only the chrome changes.
-
-## Files to change
-
-1. `src/App.tsx` — wrap `/` route in `RedirectIfAuthed` so authenticated users skip the marketing page.
-2. `src/components/AppShell.tsx` — add role-aware accent bar, role pill, avatar, and make the wordmark link to the role's dashboard. Accept an optional `roleAccent: "admin" | "buyer"` prop.
-3. `src/layouts/AdminLayout.tsx` — pass `roleAccent="admin"`.
-4. `src/layouts/BuyerLayout.tsx` — pass `roleAccent="buyer"`.
-
-No database changes. No new routes. No removed features.
-
-## What you'll see after
-
-- Sign in as `jack@lumi.nz` → land directly on the Admin console. The top of the screen shows a gold `● ADMIN` pill, your initial in a circle, and a faint gold line across the top.
-- Click the Lumi wordmark → stays inside `/admin/dashboard`.
-- Sign out and visit `/` → marketing page renders normally.
-- Sign in as a buyer → silver `BUYER` pill, neutral chrome, no admin nav items visible.
+No database change is required for this fix. The existing admin role record for `jack@lumi.nz` is present, but the UI should not be blocked by a database role query when the requested rule is email-based routing.

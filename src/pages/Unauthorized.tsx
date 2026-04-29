@@ -2,11 +2,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShieldAlert } from "lucide-react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { useAuth } from "@/hooks/useAuth";
+import { getDashboardPathForRole } from "@/lib/authRoles";
 
 export default function Unauthorized() {
-  const { role, session, signOut } = useAuth();
+  const { role, session, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const homePath = role === "admin" ? "/admin/dashboard" : role === "buyer" ? "/buyer/dashboard" : "/";
+  const homePath = getDashboardPathForRole(role);
 
   const handleSignOut = async () => {
     await signOut();
@@ -26,11 +27,11 @@ export default function Unauthorized() {
             Restricted
           </div>
           <h1 className="font-display text-3xl tracking-tight mb-4">
-            You don't have access to this area.
+            This account belongs in another area.
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed mb-8">
-            This mandate has not been shared with your account. If you believe this is a mistake,
-            contact your Lumi broker — every access attempt is logged.
+            You are signed in as {user?.email ?? "this account"}. Admin access is reserved for
+            jack@lumi.nz; other accounts open the Buyer private channel.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link

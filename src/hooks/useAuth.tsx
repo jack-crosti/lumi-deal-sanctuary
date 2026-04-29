@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { getRoleForEmail, type AppRole } from "@/lib/authRoles";
 
-export type AppRole = "admin" | "buyer";
+export type { AppRole };
 
 interface AuthContextValue {
   session: Session | null;
@@ -16,61 +17,22 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
-  const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const role = getRoleForEmail(session?.user?.email);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      if (newSession?.user) {
-        // Hold loading until we know the role, so route guards don't race.
-        setLoading(true);
-        // Defer Supabase calls to avoid deadlock inside the callback
-        setTimeout(() => {
-          fetchRole(newSession.user.id).finally(() => setLoading(false));
-        }, 0);
-      } else {
-        setRole(null);
-        setLoading(false);
-      }
+      setLoading(false);
     });
 
-    // Then check existing session
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session?.user) {
-        fetchRole(data.session.user.id).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
+      setLoading(false);
     });
 
     return () => sub.subscription.unsubscribe();
   }, []);
-
-  const fetchRole = async (userId: string, attempt = 0): Promise<void> => {
-    // Fetch all roles this user has, then prefer 'admin' if present.
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
-    if (error) {
-      console.error("[useAuth] failed to fetch role", error);
-      // Retry transient backend errors (e.g. DB warming up: PGRST001/PGRST002, 503).
-      if (attempt < 5) {
-        const delay = Math.min(1000 * Math.pow(2, attempt), 8000);
-        await new Promise((r) => setTimeout(r, delay));
-        return fetchRole(userId, attempt + 1);
-      }
-      setRole(null);
-      return;
-    }
-    const roles = (data ?? []).map((r) => r.role as AppRole);
-    if (roles.includes("admin")) setRole("admin");
-    else if (roles.includes("buyer")) setRole("buyer");
-    else setRole(null);
-  };
 
   const value = useMemo<AuthContextValue>(
     () => ({

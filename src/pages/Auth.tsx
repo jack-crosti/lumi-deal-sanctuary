@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { toast } from "sonner";
+import { ADMIN_EMAIL, getDashboardPathForEmail } from "@/lib/authRoles";
 
 type Mode = "signin" | "signup";
 
@@ -23,8 +24,7 @@ export default function Auth() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back.");
-        // RedirectIfAuthed on / and /login will route to the correct console.
-        navigate("/", { replace: true });
+        navigate(getDashboardPathForEmail(email), { replace: true });
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -72,14 +72,14 @@ export default function Auth() {
       <main className="relative z-10 mx-auto max-w-md px-6 pt-12 pb-24">
         <div className="text-center mb-10">
           <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-4">
-            Restricted Access
+            Lumi access
           </div>
           <h1 className="font-display text-4xl md:text-5xl tracking-tight">
-            {mode === "signin" ? "Enter the deal room." : "Create your access."}
+            {mode === "signin" ? "Sign in to your console." : "Create buyer access."}
           </h1>
           <p className="mt-4 text-sm text-muted-foreground">
             {mode === "signin"
-              ? "Use the credentials issued by your Lumi broker."
+              ? `${ADMIN_EMAIL} opens Admin. Other accounts open the Buyer channel.`
               : "New buyers are reviewed by a broker before listings appear."}
           </p>
         </div>
@@ -133,7 +133,7 @@ export default function Auth() {
               className="lumi-btn-primary w-full disabled:opacity-60"
             >
               {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              {mode === "signin" ? "Initialise session" : "Request access"}
+              {mode === "signin" ? "Log in" : "Request access"}
             </button>
           </form>
 

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ArrowUpRight, Lock, ShieldCheck, Eye, Sparkles } from "lucide-react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { useAuth } from "@/hooks/useAuth";
+import { getDashboardPathForRole } from "@/lib/authRoles";
 import heroLobby from "@/assets/hero-lobby.jpg";
 
 const principles = [
@@ -34,7 +35,7 @@ const process = [
 
 const Index = () => {
   const { session, role } = useAuth();
-  const enterPath = session ? (role === "admin" ? "/admin/dashboard" : "/buyer/dashboard") : "/login";
+  const enterPath = session ? getDashboardPathForRole(role) : "/login";
   const enterLabel = session ? "Enter deal room" : "Buyer sign in";
 
   return (
