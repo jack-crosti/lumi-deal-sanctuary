@@ -39,6 +39,7 @@ import {
   type RequestPriority,
 } from "@/lib/requestLabels";
 import { logActivity, makeOnceTracker, type ActivityEvent } from "@/lib/activity";
+import { Reveal, useParallax, useScrollProgress, usePrefersReducedMotion } from "@/lib/motion";
 
 type LocationMode = "blind" | "suburb" | "exact";
 
@@ -232,12 +233,7 @@ export default function BuyerBusiness() {
   }, [business, user]);
 
   if (loading) {
-    return (
-      <div className="flex items-center gap-3 text-muted-foreground font-mono-brand text-[11px] tracking-eyebrow uppercase">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-        Verifying access…
-      </div>
-    );
+    return <BuyerBusinessLoading />;
   }
   if (denied || !business) return <Navigate to="/unauthorized" replace />;
 
@@ -249,6 +245,7 @@ export default function BuyerBusiness() {
 
   return (
     <div className="-mx-6 md:-mx-12 -my-14 md:-my-20 bg-background text-foreground">
+      <PageProgress />
       {/* Top utility bar — quiet, editorial */}
       <div className="sticky top-20 z-30 border-b hairline bg-background/85 backdrop-blur-xl">
         <div className="mx-auto max-w-[1600px] px-6 md:px-12 py-3 flex items-center justify-between gap-4">
