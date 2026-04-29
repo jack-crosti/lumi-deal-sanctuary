@@ -69,6 +69,29 @@ interface BusinessDetail {
   owner_involvement: string | null;
   opening_hours: string | null;
   hero_image_url: string | null;
+  // Financial snapshot
+  gross_profit: number | null;
+  gross_profit_pct: number | null;
+  wage_cost: number | null;
+  wage_pct: number | null;
+  rent_pct_sales: number | null;
+  owner_profit: number | null;
+  add_backs: number | null;
+  asking_price_multiple: number | null;
+  financial_notes: string | null;
+  financial_source:
+    | "accountant"
+    | "gst_returns"
+    | "pos_reports"
+    | "vendor_supplied"
+    | "broker_estimate"
+    | "other"
+    | null;
+  financial_review_status:
+    | "draft"
+    | "needs_verification"
+    | "verified"
+    | "not_available";
 }
 
 const SECTIONS = [
@@ -106,7 +129,7 @@ export default function BuyerBusiness() {
         supabase
           .from("businesses")
           .select(
-            "id,name,public_title,confidential_title,headline,summary,business_type,industry,location_mode,suburb,city,region,address,asking_price,ebitda,normalised_profit,revenue,stock_value,weekly_sales_min,weekly_sales_max,rent_per_year,lease_expiry,renewal_rights,tenure,staff_summary,owner_involvement,opening_hours,hero_image_url"
+            "id,name,public_title,confidential_title,headline,summary,business_type,industry,location_mode,suburb,city,region,address,asking_price,ebitda,normalised_profit,revenue,stock_value,weekly_sales_min,weekly_sales_max,rent_per_year,lease_expiry,renewal_rights,tenure,staff_summary,owner_involvement,opening_hours,hero_image_url,gross_profit,gross_profit_pct,wage_cost,wage_pct,rent_pct_sales,owner_profit,add_backs,asking_price_multiple,financial_notes,financial_source,financial_review_status"
           )
           .eq("id", businessId)
           .maybeSingle(),
@@ -864,6 +887,35 @@ function FinancialsSection({
         )}`
       : "—";
 
+  const sourceLabels: Record<string, string> = {
+    accountant: "Accountant financials",
+    gst_returns: "GST returns",
+    pos_reports: "POS reports",
+    vendor_supplied: "Vendor supplied",
+    broker_estimate: "Broker estimate",
+    other: "Other",
+  };
+  const sourceLabel = business.financial_source
+    ? sourceLabels[business.financial_source]
+    : null;
+
+  const askingMultiple =
+    business.asking_price_multiple ??
+    (business.asking_price && profit && profit > 0
+      ? Number((business.asking_price / profit).toFixed(2))
+      : null);
+
+  const fmtPct = (v: number | null | undefined) =>
+    v == null || Number.isNaN(Number(v))
+      ? "Not currently available"
+      : `${Number(v).toFixed(1)}%`;
+
+  // Composition bar for the cost stack (only when sales pct values exist)
+  const wagePct = business.wage_pct ?? null;
+  const rentPct = business.rent_pct_sales ?? null;
+  const grossPct = business.gross_profit_pct ?? null;
+  const haveStack = wagePct != null || rentPct != null || grossPct != null;
+
   return (
     <SectionFrame
       id="financials"
@@ -878,24 +930,227 @@ function FinancialsSection({
           Revenue · annualised
         </div>
         <div className="lumi-stat text-7xl md:text-[10rem] lg:text-[14rem] text-gradient-gold leading-[0.9]">
-          {formatCurrency(business.revenue, { compact: true })}
+          {business.revenue != null
+            ? formatCurrency(business.revenue, { compact: true })
+            : <span className="text-muted-foreground/60">Not currently available</span>}
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-10">
         <PullStat
           label="Normalised profit"
-          value={formatCurrency(profit, { compact: true })}
+          value={profit != null ? formatCurrency(profit, { compact: true }) : "Not currently available"}
           sub="EBITDA basis"
           size="lg"
         />
-        <PullStat label="Weekly sales" value={weekly} size="lg" />
+        <PullStat label="Weekly sales" value={weekly === "—" ? "Not currently available" : weekly} size="lg" />
         <PullStat
           label="Stock at value"
-          value={formatCurrency(business.stock_value, { compact: true })}
+          value={
+            business.stock_value != null
+              ? formatCurrency(business.stock_value, { compact: true })
+              : "Not currently available"
+          }
           size="lg"
         />
       </div>
+
+      {/* Ratio cards */}
+      <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <RatioCard
+          label="Gross profit margin"
+          pct={grossPct}
+          tone="positive"
+          caption={
+            business.gross_profit != null
+              ? formatCurrency(business.gross_profit, { compact: true }) + " gross"
+              : null
+          }
+        />
+        <RatioCard
+          label="Wage ratio"
+          pct={wagePct}
+          tone="neutral"
+          caption={
+            business.wage_cost != null
+              ? formatCurrency(business.wage_cost, { compact: true }) + " wages"
+              : null
+          }
+        />
+        <RatioCard
+          label="Rent ratio"
+          pct={rentPct}
+          tone="neutral"
+          caption={
+            business.rent_per_year != null
+              ? formatCurrency(business.rent_per_year, { compact: true }) + " p.a."
+              : null
+          }
+        />
+      </div>
+
+      {/* Asking price & multiple */}
+      <div className="mt-16 grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="lg:col-span-7 lumi-card p-8 md:p-10">
+          <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground mb-3">
+            Asking price
+          </div>
+          <div className="lumi-stat text-5xl md:text-7xl text-foreground">
+            {business.asking_price != null
+              ? formatCurrency(business.asking_price, { compact: true })
+              : "Not currently available"}
+          </div>
+          {haveStack && (
+            <div className="mt-8">
+              <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3">
+                Cost stack as % of sales
+              </div>
+              <div className="h-3 w-full rounded-full overflow-hidden flex bg-card/40 border hairline">
+                {wagePct != null && (
+                  <div
+                    className="h-full bg-amber-500/70"
+                    style={{ width: `${Math.min(Number(wagePct), 100)}%` }}
+                    title={`Wages ${fmtPct(wagePct)}`}
+                  />
+                )}
+                {rentPct != null && (
+                  <div
+                    className="h-full bg-rose-500/70"
+                    style={{ width: `${Math.min(Number(rentPct), 100)}%` }}
+                    title={`Rent ${fmtPct(rentPct)}`}
+                  />
+                )}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-muted-foreground">
+                <Legend dot="bg-amber-500/70" label={`Wages ${fmtPct(wagePct)}`} />
+                <Legend dot="bg-rose-500/70" label={`Rent ${fmtPct(rentPct)}`} />
+                {grossPct != null && (
+                  <Legend dot="bg-emerald-500/70" label={`Gross ${fmtPct(grossPct)}`} />
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="lg:col-span-5 lumi-card p-8 md:p-10">
+          <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground mb-3">
+            Asking price multiple
+          </div>
+          <div className="lumi-stat text-5xl md:text-7xl text-gradient-gold">
+            {askingMultiple != null ? `${askingMultiple}×` : "Not currently available"}
+          </div>
+          <p className="mt-4 text-[13px] text-foreground/70 leading-[1.6]">
+            Calculated against {business.ebitda != null ? "EBITDA" : business.normalised_profit != null ? "normalised profit" : "owner profit"}.
+            A common shorthand for value, but not a substitute for due diligence.
+          </p>
+        </div>
+      </div>
+
+      {/* Broker notes & source */}
+      {(business.financial_notes || sourceLabel) && (
+        <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
+          {business.financial_notes && (
+            <div className="lg:col-span-8 lumi-card p-8">
+              <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-4">
+                Broker notes
+              </div>
+              <p className="text-[15px] md:text-base text-foreground/85 leading-[1.7] whitespace-pre-line">
+                {business.financial_notes}
+              </p>
+            </div>
+          )}
+          {sourceLabel && (
+            <div className="lg:col-span-4 lumi-card p-8">
+              <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground mb-3">
+                Source
+              </div>
+              <p className="text-base text-foreground">{sourceLabel}</p>
+              {business.financial_review_status === "verified" && (
+                <span className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 font-mono-brand text-[10px] tracking-eyebrow uppercase">
+                  <Check className="h-3 w-3" /> Verified
+                </span>
+              )}
+              {business.financial_review_status === "needs_verification" && (
+                <span className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-300 font-mono-brand text-[10px] tracking-eyebrow uppercase">
+                  Awaiting verification
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Disclaimer */}
+      <div className="mt-12 rounded-sm border hairline bg-card/30 p-5 flex items-start gap-3">
+        <ShieldAlert className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+        <p className="text-[12px] text-muted-foreground leading-[1.6]">
+          These figures are summarised for review only. Buyers should complete their own
+          due diligence with an accountant or advisor before relying on them.
+        </p>
+      </div>
     </SectionFrame>
+  );
+}
+
+function RatioCard({
+  label,
+  pct,
+  caption,
+  tone,
+}: {
+  label: string;
+  pct: number | null;
+  caption: string | null;
+  tone: "positive" | "neutral";
+}) {
+  const value = pct == null ? null : Math.max(0, Math.min(100, Number(pct)));
+  const ringColor =
+    tone === "positive" ? "stroke-emerald-400/80" : "stroke-primary/80";
+  const r = 42;
+  const c = 2 * Math.PI * r;
+  const offset = value == null ? c : c - (value / 100) * c;
+  return (
+    <div className="lumi-card p-7">
+      <div className="flex items-center gap-5">
+        <div className="relative h-24 w-24 flex-shrink-0">
+          <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+            <circle cx="50" cy="50" r={r} className="fill-none stroke-border" strokeWidth="6" />
+            {value != null && (
+              <circle
+                cx="50"
+                cy="50"
+                r={r}
+                className={`fill-none ${ringColor}`}
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeDasharray={c}
+                strokeDashoffset={offset}
+              />
+            )}
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="lumi-stat text-xl tabular-nums">
+              {value == null ? "—" : `${value.toFixed(0)}%`}
+            </span>
+          </div>
+        </div>
+        <div className="min-w-0">
+          <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-2">
+            {label}
+          </div>
+          <div className="text-sm text-foreground/85">
+            {value == null ? "Not currently available" : caption ?? "Of annual sales"}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Legend({ dot, label }: { dot: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-2 tabular-nums">
+      <span className={`h-2 w-2 rounded-full ${dot}`} />
+      {label}
+    </span>
   );
 }
 

@@ -22,6 +22,7 @@ import BusinessDocuments from "@/components/admin/BusinessDocuments";
 import BusinessOfferInterest from "@/components/admin/BusinessOfferInterest";
 import ActivityFeed from "@/components/admin/ActivityFeed";
 import PresentationStudio from "@/components/admin/PresentationStudio";
+import BusinessFinancials from "@/components/admin/BusinessFinancials";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -201,7 +202,7 @@ export default function AdminBusinessDetail() {
             <BusinessDocuments businessId={b.id} />
           </TabsContent>
           <TabsContent value="financials" className="mt-0">
-            <Financials b={b} />
+            <BusinessFinancials businessId={b.id} />
           </TabsContent>
           <TabsContent value="location" className="mt-0">
             <Location b={b} />
@@ -294,39 +295,6 @@ function Overview({ b }: { b: Business }) {
             ]}
           />
         </Block>
-      </div>
-    </div>
-  );
-}
-
-function Financials({ b }: { b: Business }) {
-  const items: { label: string; value: number | null }[] = [
-    { label: "Asking price", value: b.asking_price },
-    { label: "Stock value", value: b.stock_value },
-    { label: "Annual revenue", value: b.revenue },
-    { label: "Normalised profit", value: b.normalised_profit },
-    { label: "EBITDA / owner profit", value: b.ebitda },
-    { label: "Rent per year", value: b.rent_per_year },
-  ];
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {items.map((it) => (
-        <div key={it.label} className="lumi-card p-7">
-          <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3">
-            {it.label}
-          </div>
-          <div className="lumi-stat text-3xl">{formatCurrency(it.value)}</div>
-        </div>
-      ))}
-      <div className="lumi-card p-7 md:col-span-2 lg:col-span-3">
-        <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3">
-          Weekly sales range
-        </div>
-        <div className="lumi-stat text-3xl">
-          {b.weekly_sales_min == null && b.weekly_sales_max == null
-            ? "—"
-            : `${formatCurrency(b.weekly_sales_min)} – ${formatCurrency(b.weekly_sales_max)}`}
-        </div>
       </div>
     </div>
   );

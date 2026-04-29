@@ -67,9 +67,11 @@ export type Database = {
       }
       businesses: {
         Row: {
+          add_backs: number | null
           address: string | null
           archived_at: string | null
           asking_price: number | null
+          asking_price_multiple: number | null
           broker_notes: string | null
           business_type: string | null
           city: string | null
@@ -77,6 +79,13 @@ export type Database = {
           created_at: string
           created_by: string | null
           ebitda: number | null
+          financial_notes: string | null
+          financial_review_status: Database["public"]["Enums"]["financial_review_status"]
+          financial_source:
+            | Database["public"]["Enums"]["financial_source"]
+            | null
+          gross_profit: number | null
+          gross_profit_pct: number | null
           headline: string | null
           hero_image_url: string | null
           id: string
@@ -87,9 +96,11 @@ export type Database = {
           normalised_profit: number | null
           opening_hours: string | null
           owner_involvement: string | null
+          owner_profit: number | null
           public_title: string | null
           region: string | null
           renewal_rights: string | null
+          rent_pct_sales: number | null
           rent_per_year: number | null
           revenue: number | null
           slug: string | null
@@ -100,13 +111,17 @@ export type Database = {
           summary: string | null
           tenure: string | null
           updated_at: string
+          wage_cost: number | null
+          wage_pct: number | null
           weekly_sales_max: number | null
           weekly_sales_min: number | null
         }
         Insert: {
+          add_backs?: number | null
           address?: string | null
           archived_at?: string | null
           asking_price?: number | null
+          asking_price_multiple?: number | null
           broker_notes?: string | null
           business_type?: string | null
           city?: string | null
@@ -114,6 +129,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           ebitda?: number | null
+          financial_notes?: string | null
+          financial_review_status?: Database["public"]["Enums"]["financial_review_status"]
+          financial_source?:
+            | Database["public"]["Enums"]["financial_source"]
+            | null
+          gross_profit?: number | null
+          gross_profit_pct?: number | null
           headline?: string | null
           hero_image_url?: string | null
           id?: string
@@ -124,9 +146,11 @@ export type Database = {
           normalised_profit?: number | null
           opening_hours?: string | null
           owner_involvement?: string | null
+          owner_profit?: number | null
           public_title?: string | null
           region?: string | null
           renewal_rights?: string | null
+          rent_pct_sales?: number | null
           rent_per_year?: number | null
           revenue?: number | null
           slug?: string | null
@@ -137,13 +161,17 @@ export type Database = {
           summary?: string | null
           tenure?: string | null
           updated_at?: string
+          wage_cost?: number | null
+          wage_pct?: number | null
           weekly_sales_max?: number | null
           weekly_sales_min?: number | null
         }
         Update: {
+          add_backs?: number | null
           address?: string | null
           archived_at?: string | null
           asking_price?: number | null
+          asking_price_multiple?: number | null
           broker_notes?: string | null
           business_type?: string | null
           city?: string | null
@@ -151,6 +179,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           ebitda?: number | null
+          financial_notes?: string | null
+          financial_review_status?: Database["public"]["Enums"]["financial_review_status"]
+          financial_source?:
+            | Database["public"]["Enums"]["financial_source"]
+            | null
+          gross_profit?: number | null
+          gross_profit_pct?: number | null
           headline?: string | null
           hero_image_url?: string | null
           id?: string
@@ -161,9 +196,11 @@ export type Database = {
           normalised_profit?: number | null
           opening_hours?: string | null
           owner_involvement?: string | null
+          owner_profit?: number | null
           public_title?: string | null
           region?: string | null
           renewal_rights?: string | null
+          rent_pct_sales?: number | null
           rent_per_year?: number | null
           revenue?: number | null
           slug?: string | null
@@ -174,6 +211,8 @@ export type Database = {
           summary?: string | null
           tenure?: string | null
           updated_at?: string
+          wage_cost?: number | null
+          wage_pct?: number | null
           weekly_sales_max?: number | null
           weekly_sales_min?: number | null
         }
@@ -982,6 +1021,18 @@ export type Database = {
         | "pre_approved"
         | "needs_finance"
         | "not_disclosed"
+      financial_review_status:
+        | "draft"
+        | "needs_verification"
+        | "verified"
+        | "not_available"
+      financial_source:
+        | "accountant"
+        | "gst_returns"
+        | "pos_reports"
+        | "vendor_supplied"
+        | "broker_estimate"
+        | "other"
       im_import_status:
         | "uploading"
         | "extracting"
@@ -1254,6 +1305,20 @@ export const Constants = {
         "pre_approved",
         "needs_finance",
         "not_disclosed",
+      ],
+      financial_review_status: [
+        "draft",
+        "needs_verification",
+        "verified",
+        "not_available",
+      ],
+      financial_source: [
+        "accountant",
+        "gst_returns",
+        "pos_reports",
+        "vendor_supplied",
+        "broker_estimate",
+        "other",
       ],
       im_import_status: [
         "uploading",
