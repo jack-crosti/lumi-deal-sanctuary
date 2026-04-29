@@ -39,6 +39,7 @@ import {
   type RequestPriority,
 } from "@/lib/requestLabels";
 import { logActivity, makeOnceTracker, type ActivityEvent } from "@/lib/activity";
+import { Reveal, useParallax, useScrollProgress, usePrefersReducedMotion } from "@/lib/motion";
 
 type LocationMode = "blind" | "suburb" | "exact";
 
@@ -232,12 +233,7 @@ export default function BuyerBusiness() {
   }, [business, user]);
 
   if (loading) {
-    return (
-      <div className="flex items-center gap-3 text-muted-foreground font-mono-brand text-[11px] tracking-eyebrow uppercase">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-        Verifying access…
-      </div>
-    );
+    return <BuyerBusinessLoading />;
   }
   if (denied || !business) return <Navigate to="/unauthorized" replace />;
 
@@ -249,6 +245,7 @@ export default function BuyerBusiness() {
 
   return (
     <div className="-mx-6 md:-mx-12 -my-14 md:-my-20 bg-background text-foreground">
+      <PageProgress />
       {/* Top utility bar — quiet, editorial */}
       <div className="sticky top-20 z-30 border-b hairline bg-background/85 backdrop-blur-xl">
         <div className="mx-auto max-w-[1600px] px-6 md:px-12 py-3 flex items-center justify-between gap-4">
@@ -381,7 +378,7 @@ function SectionFrame({
       }`}
     >
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 py-32 md:py-44">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 mb-16 md:mb-20">
+        <Reveal as="div" className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 mb-16 md:mb-20">
           <div className="lg:col-span-5">
             <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-6 flex items-center gap-3">
               <span className="h-px w-8 bg-primary" />
@@ -399,8 +396,8 @@ function SectionFrame({
               </p>
             </div>
           )}
-        </div>
-        {children}
+        </Reveal>
+        <Reveal delay={120}>{children}</Reveal>
       </div>
     </section>
   );
@@ -426,13 +423,13 @@ function PullStat({
       ? "text-5xl md:text-7xl"
       : "text-4xl md:text-5xl";
   return (
-    <div className="border-t hairline pt-6">
+    <div className="border-t hairline pt-6 transition-transform duration-500 ease-out motion-safe:hover:-translate-y-0.5">
       <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-4 flex items-center gap-2">
         {locked && <Lock className="h-3 w-3 text-primary/60" />}
         {label}
       </div>
       <div
-        className={`lumi-stat ${sizeClass} ${
+        className={`lumi-stat ${sizeClass} transition-colors duration-500 ${
           locked ? "text-muted-foreground/50" : "text-foreground"
         }`}
       >
@@ -463,19 +460,28 @@ function HeroFullBleed({
   const title = business.confidential_title || business.public_title || business.name;
   const profit = business.ebitda ?? business.normalised_profit;
   const locationLine = locationDisplay(business, showExactLocation);
+  const parallaxRef = useParallax(0.18);
 
   return (
     <section id="hero" className="relative scroll-mt-32">
       {/* Full-viewport image */}
       <div className="relative h-[100svh] min-h-[680px] w-full overflow-hidden">
         {business.hero_image_url ? (
-          <img
-            src={business.hero_image_url}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover scale-[1.03]"
-          />
+          <div
+            ref={parallaxRef}
+            className="absolute inset-0 will-change-transform animate-fade-cinema"
+            aria-hidden
+          >
+            <img
+              src={business.hero_image_url}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover scale-[1.08]"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-card to-background-deep" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-card to-background-deep animate-fade-cinema" />
         )}
         {/* Cinematic stack: vignette + radiance + bottom-fade to bg */}
         <div className="absolute inset-0 bg-vignette pointer-events-none" />
@@ -1948,4 +1954,77 @@ function locationDisplay(b: BusinessDetail, exact: boolean) {
     return [b.suburb, b.city].filter(Boolean).join(", ") || b.region || "Suburb confidential";
   }
   return b.region || "Location confidential";
+}
+/* =====================================================================
+ * Page-level chrome: progress bar + premium loading state
+ * ================================================================== */
+
+function PageProgress() {
+  const progress = useScrollProgress();
+  return (
+    <div
+      className="fixed top-0 left-0 right-0 z-[60] h-[2px] bg-transparent pointer-events-none"
+      aria-hidden
+    >
+      <div
+        className="h-full bg-gradient-to-r from-primary/30 via-primary to-primary/30 origin-left"
+        style={{
+          transform: `scaleX(${progress})`,
+          transition: "transform 120ms linear",
+        }}
+      />
+    </div>
+  );
+}
+
+function BuyerBusinessLoading() {
+  const reduced = usePrefersReducedMotion();
+  return (
+    <div className="-mx-6 md:-mx-12 -my-14 md:-my-20 min-h-[100svh] bg-background flex items-center justify-center">
+      <div className="text-center px-6">
+        {/* Halo ring */}
+        <div className="relative mx-auto h-16 w-16 mb-8">
+          <div
+            className={`absolute inset-0 rounded-full border border-primary/30 ${
+              reduced ? "" : "animate-pulse-glow"
+            }`}
+          />
+          <div className="absolute inset-2 rounded-full border border-primary/20" />
+          <Loader2
+            className={`absolute inset-0 m-auto h-5 w-5 text-primary ${
+              reduced ? "" : "animate-spin"
+            }`}
+            strokeWidth={1.5}
+          />
+        </div>
+        <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground">
+          Lumi Private
+        </div>
+        <div className="mt-3 font-display text-2xl md:text-3xl tracking-display text-foreground">
+          Verifying your access
+        </div>
+        <p className="mt-3 text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
+          Confirming credentials and preparing this confidential presentation.
+        </p>
+        {/* Shimmering skeleton bars */}
+        <div className="mt-10 max-w-xs mx-auto space-y-2.5">
+          <div className="h-1 rounded-full bg-card/50 overflow-hidden">
+            <div
+              className={`h-full w-1/3 bg-gradient-to-r from-transparent via-primary/70 to-transparent ${
+                reduced ? "" : "animate-shimmer"
+              }`}
+            />
+          </div>
+          <div className="h-1 rounded-full bg-card/50 overflow-hidden">
+            <div
+              className={`h-full w-1/2 bg-gradient-to-r from-transparent via-primary/50 to-transparent ${
+                reduced ? "" : "animate-shimmer"
+              }`}
+              style={{ animationDelay: "200ms" }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
