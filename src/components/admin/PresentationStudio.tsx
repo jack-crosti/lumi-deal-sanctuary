@@ -45,6 +45,8 @@ import {
   type SectionType,
 } from "@/lib/presentationBlocks";
 import PresentationPreview from "./PresentationPreview";
+import PresentationHistory from "./PresentationHistory";
+import { History as HistoryIcon } from "lucide-react";
 
 interface VersionRow {
   id: string;
@@ -91,6 +93,10 @@ export default function PresentationStudio({ businessId }: Props) {
   const [editing, setEditing] = useState<BlockRow | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [showSaveDraft, setShowSaveDraft] = useState(false);
+  const [draftSummary, setDraftSummary] = useState("");
+  const [historyKey, setHistoryKey] = useState(0);
 
   const load = async () => {
     setLoading(true);
@@ -238,6 +244,29 @@ export default function PresentationStudio({ businessId }: Props) {
     toast.success(`${blockLabel(type)} block added`);
   };
 
+  const saveDraftSnapshot = async () => {
+    if (!version) return;
+    setSavingDraft(true);
+    const { error } = await supabase.rpc(
+      "save_presentation_snapshot" as never,
+      {
+        _version_id: version.id,
+        _change_summary: draftSummary.trim() || null,
+      } as never,
+    );
+    setSavingDraft(false);
+    if (error) return toast.error(error.message);
+    toast.success("Draft saved to history");
+    setShowSaveDraft(false);
+    setDraftSummary("");
+    setHistoryKey((k) => k + 1);
+  };
+
+  const onRestored = async () => {
+    await load();
+    setHistoryKey((k) => k + 1);
+  };
+
   if (loading || !version || !blocks) {
     return (
       <div className="lumi-card p-12 text-center text-sm text-muted-foreground flex items-center justify-center gap-3">
@@ -273,6 +302,10 @@ export default function PresentationStudio({ businessId }: Props) {
             <button onClick={() => setShowPreview(true)} className="lumi-btn-ghost">
               <Eye className="h-3.5 w-3.5" />
               Preview as buyer
+            </button>
+            <button onClick={() => setShowSaveDraft(true)} className="lumi-btn-ghost">
+              <Save className="h-3.5 w-3.5" />
+              Save draft
             </button>
             <button onClick={() => setAdding(true)} className="lumi-btn-primary">
               <Plus className="h-3.5 w-3.5" />
