@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const fetchRole = async (userId: string) => {
+  const fetchRole = async (userId: string, attempt = 0): Promise<void> => {
     // Fetch all roles this user has, then prefer 'admin' if present.
     const { data, error } = await supabase
       .from("user_roles")
@@ -57,6 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("user_id", userId);
     if (error) {
       console.error("[useAuth] failed to fetch role", error);
+      // Retry transient backend errors (e.g. DB warming up: PGRST001/PGRST002, 503).
+      if (attempt < 5) {
+        const delay = Math.min(1000 * Math.pow(2, attempt), 8000);
+        await new Promise((r) => setTimeout(r, delay));
+        return fetchRole(userId, attempt + 1);
+      }
       setRole(null);
       return;
     }
