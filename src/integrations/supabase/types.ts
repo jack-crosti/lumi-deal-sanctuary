@@ -415,38 +415,86 @@ export type Database = {
       }
       offer_interest: {
         Row: {
+          accountant_email: string | null
+          accountant_name: string | null
+          additional_notes: string | null
           business_id: string
+          buyer_entity: string | null
           buyer_id: string
+          conditions: string[]
           created_at: string
+          deposit_amount: number | null
           disclaimer_accepted: boolean
+          due_diligence_period: string | null
+          finance_approval_timeframe: string | null
           id: string
           indicative_amount: number | null
+          other_condition_text: string | null
+          price_notes: string | null
+          proposed_price: number | null
+          settlement_timeframe: string | null
+          solicitor_email: string | null
+          solicitor_name: string | null
           status: Database["public"]["Enums"]["offer_status"]
+          stock_treatment: string | null
           submitted_at: string | null
+          takeover_date: string | null
           terms: string | null
           updated_at: string
         }
         Insert: {
+          accountant_email?: string | null
+          accountant_name?: string | null
+          additional_notes?: string | null
           business_id: string
+          buyer_entity?: string | null
           buyer_id: string
+          conditions?: string[]
           created_at?: string
+          deposit_amount?: number | null
           disclaimer_accepted?: boolean
+          due_diligence_period?: string | null
+          finance_approval_timeframe?: string | null
           id?: string
           indicative_amount?: number | null
+          other_condition_text?: string | null
+          price_notes?: string | null
+          proposed_price?: number | null
+          settlement_timeframe?: string | null
+          solicitor_email?: string | null
+          solicitor_name?: string | null
           status?: Database["public"]["Enums"]["offer_status"]
+          stock_treatment?: string | null
           submitted_at?: string | null
+          takeover_date?: string | null
           terms?: string | null
           updated_at?: string
         }
         Update: {
+          accountant_email?: string | null
+          accountant_name?: string | null
+          additional_notes?: string | null
           business_id?: string
+          buyer_entity?: string | null
           buyer_id?: string
+          conditions?: string[]
           created_at?: string
+          deposit_amount?: number | null
           disclaimer_accepted?: boolean
+          due_diligence_period?: string | null
+          finance_approval_timeframe?: string | null
           id?: string
           indicative_amount?: number | null
+          other_condition_text?: string | null
+          price_notes?: string | null
+          proposed_price?: number | null
+          settlement_timeframe?: string | null
+          solicitor_email?: string | null
+          solicitor_name?: string | null
           status?: Database["public"]["Enums"]["offer_status"]
+          stock_treatment?: string | null
           submitted_at?: string | null
+          takeover_date?: string | null
           terms?: string | null
           updated_at?: string
         }
@@ -746,6 +794,10 @@ export type Database = {
         | "withdrawn"
         | "progressing"
         | "closed"
+        | "broker_reviewing"
+        | "call_booked"
+        | "spa_preparing"
+        | "not_proceeding"
       owner_intent: "working_owner" | "investor" | "either"
       presentation_status: "draft" | "published" | "archived"
       question_status: "open" | "answered" | "closed"
@@ -988,6 +1040,10 @@ export const Constants = {
         "withdrawn",
         "progressing",
         "closed",
+        "broker_reviewing",
+        "call_booked",
+        "spa_preparing",
+        "not_proceeding",
       ],
       owner_intent: ["working_owner", "investor", "either"],
       presentation_status: ["draft", "published", "archived"],
