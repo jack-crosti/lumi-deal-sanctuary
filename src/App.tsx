@@ -15,6 +15,8 @@ import AdminBusinessNew from "./pages/admin/AdminBusinessNew.tsx";
 import AdminBusinessDetail from "./pages/admin/AdminBusinessDetail.tsx";
 import AdminBusinessEdit from "./pages/admin/AdminBusinessEdit.tsx";
 import AdminBuyers from "./pages/admin/AdminBuyers.tsx";
+import AdminBuyerNew from "./pages/admin/AdminBuyerNew.tsx";
+import AdminBuyerDetail from "./pages/admin/AdminBuyerDetail.tsx";
 import AdminActivity from "./pages/admin/AdminActivity.tsx";
 import AdminRequests from "./pages/admin/AdminRequests.tsx";
 import AdminSettings from "./pages/admin/AdminSettings.tsx";
@@ -73,6 +75,8 @@ const App = () => (
               <Route path="businesses/:id" element={<AdminBusinessDetail />} />
               <Route path="businesses/:id/edit" element={<AdminBusinessEdit />} />
               <Route path="buyers" element={<AdminBuyers />} />
+              <Route path="buyers/new" element={<AdminBuyerNew />} />
+              <Route path="buyers/:id" element={<AdminBuyerDetail />} />
               <Route path="activity" element={<AdminActivity />} />
               <Route path="requests" element={<AdminRequests />} />
               <Route path="settings" element={<AdminSettings />} />
