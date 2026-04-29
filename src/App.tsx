@@ -12,6 +12,8 @@ import AdminLayout from "./layouts/AdminLayout.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminBusinesses from "./pages/admin/AdminBusinesses.tsx";
 import AdminBusinessNew from "./pages/admin/AdminBusinessNew.tsx";
+import AdminBusinessDetail from "./pages/admin/AdminBusinessDetail.tsx";
+import AdminBusinessEdit from "./pages/admin/AdminBusinessEdit.tsx";
 import AdminBuyers from "./pages/admin/AdminBuyers.tsx";
 import AdminActivity from "./pages/admin/AdminActivity.tsx";
 import AdminRequests from "./pages/admin/AdminRequests.tsx";
@@ -61,6 +63,8 @@ const App = () => (
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="businesses" element={<AdminBusinesses />} />
               <Route path="businesses/new" element={<AdminBusinessNew />} />
+              <Route path="businesses/:id" element={<AdminBusinessDetail />} />
+              <Route path="businesses/:id/edit" element={<AdminBusinessEdit />} />
               <Route path="buyers" element={<AdminBuyers />} />
               <Route path="activity" element={<AdminActivity />} />
               <Route path="requests" element={<AdminRequests />} />
