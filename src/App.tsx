@@ -20,6 +20,7 @@ import AdminBuyerDetail from "./pages/admin/AdminBuyerDetail.tsx";
 import AdminActivity from "./pages/admin/AdminActivity.tsx";
 import AdminRequests from "./pages/admin/AdminRequests.tsx";
 import AdminSettings from "./pages/admin/AdminSettings.tsx";
+import AdminSecurity from "./pages/admin/AdminSecurity.tsx";
 import BuyerLayout from "./layouts/BuyerLayout.tsx";
 import BuyerDashboard from "./pages/buyer/BuyerDashboard.tsx";
 import BuyerBusiness from "./pages/buyer/BuyerBusiness.tsx";
@@ -80,6 +81,7 @@ const App = () => (
               <Route path="activity" element={<AdminActivity />} />
               <Route path="requests" element={<AdminRequests />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="settings/security" element={<AdminSecurity />} />
             </Route>
 
             {/* Buyer */}
