@@ -124,7 +124,10 @@ export default function IMImportDialog({
       const { error: upErr } = await supabase.storage
         .from("im-imports")
         .upload(path, file, { contentType: "application/pdf", upsert: false });
-      if (upErr) throw upErr;
+      if (upErr) {
+        console.error("[IMImport] upload failed", upErr);
+        throw new Error(`Upload failed: ${upErr.message}`);
+      }
 
       const { data: row, error: insErr } = await supabase
         .from("im_imports")
@@ -139,7 +142,10 @@ export default function IMImportDialog({
         })
         .select("*")
         .single();
-      if (insErr || !row) throw insErr ?? new Error("Could not create import");
+      if (insErr || !row) {
+        console.error("[IMImport] insert failed", insErr);
+        throw new Error(insErr?.message ?? "Could not create import row");
+      }
 
       setImportRow(row as unknown as ImportRow);
       setStep("processing");
@@ -149,10 +155,12 @@ export default function IMImportDialog({
         "generate-presentation-from-im",
         { body: { import_id: row.id } },
       );
-      if (genErr) {
-        const msg =
-          (gen as { error?: string } | null)?.error ?? genErr.message ?? "Generation failed";
-        toast.error(msg);
+      const genErrorMsg = genErr
+        ? ((gen as { error?: string } | null)?.error ?? genErr.message ?? "Generation failed")
+        : null;
+      if (genErrorMsg) {
+        console.error("[IMImport] invoke error", genErr, gen);
+        toast.error(genErrorMsg);
       }
       // Reload final row
       const { data: refreshed } = await supabase
@@ -165,10 +173,25 @@ export default function IMImportDialog({
         setImportRow(r);
         if (r.status === "ready_for_review") setStep("review");
         else if (r.status === "failed") setStep("error");
+        else {
+          // Stuck mid-pipeline (network drop, function timeout) — surface as error
+          // so the user can retry instead of seeing an indefinite spinner.
+          setImportRow({
+            ...r,
+            error_message:
+              r.error_message ??
+              genErrorMsg ??
+              "Generation did not complete. The AI request may have timed out — try again.",
+            status: "failed",
+          });
+          setStep("error");
+        }
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Upload failed";
+      console.error("[IMImport] startImport failed", e);
       toast.error(msg);
+      setStep("upload");
     } finally {
       setBusy(false);
     }
