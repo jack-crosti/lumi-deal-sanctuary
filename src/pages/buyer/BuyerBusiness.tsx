@@ -460,19 +460,28 @@ function HeroFullBleed({
   const title = business.confidential_title || business.public_title || business.name;
   const profit = business.ebitda ?? business.normalised_profit;
   const locationLine = locationDisplay(business, showExactLocation);
+  const parallaxRef = useParallax(0.18);
 
   return (
     <section id="hero" className="relative scroll-mt-32">
       {/* Full-viewport image */}
       <div className="relative h-[100svh] min-h-[680px] w-full overflow-hidden">
         {business.hero_image_url ? (
-          <img
-            src={business.hero_image_url}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover scale-[1.03]"
-          />
+          <div
+            ref={parallaxRef}
+            className="absolute inset-0 will-change-transform animate-fade-cinema"
+            aria-hidden
+          >
+            <img
+              src={business.hero_image_url}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover scale-[1.08]"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-card to-background-deep" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-card to-background-deep animate-fade-cinema" />
         )}
         {/* Cinematic stack: vignette + radiance + bottom-fade to bg */}
         <div className="absolute inset-0 bg-vignette pointer-events-none" />
