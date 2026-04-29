@@ -6,5 +6,5 @@ const nav: NavItem[] = [
 ];
 
 export default function BuyerLayout() {
-  return <AppShell area="Buyer" nav={nav} />;
+  return <AppShell area="Buyer" nav={nav} roleAccent="buyer" />;
 }
