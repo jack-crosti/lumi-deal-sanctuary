@@ -47,7 +47,8 @@ import {
 import PresentationPreview from "./PresentationPreview";
 import PresentationHistory from "./PresentationHistory";
 import PresentationAIWorkspace from "./PresentationAIWorkspace";
-import { History as HistoryIcon, Sparkles } from "lucide-react";
+import IMImportDialog from "./IMImportDialog";
+import { History as HistoryIcon, Sparkles, FileUp } from "lucide-react";
 
 interface VersionRow {
   id: string;
@@ -99,6 +100,8 @@ export default function PresentationStudio({ businessId }: Props) {
   const [draftSummary, setDraftSummary] = useState("");
   const [historyKey, setHistoryKey] = useState(0);
   const [showAIWorkspace, setShowAIWorkspace] = useState(false);
+  const [showIMImport, setShowIMImport] = useState(false);
+  const [hasPublished, setHasPublished] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -150,6 +153,23 @@ export default function PresentationStudio({ businessId }: Props) {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [businessId]);
+
+  // Track whether business has any published version (for IM-import warning)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from(VERSIONS_TABLE)
+        .select("id")
+        .eq("business_id", businessId)
+        .eq("status", "published")
+        .limit(1);
+      if (!cancelled) setHasPublished((data?.length ?? 0) > 0);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [businessId, version?.status]);
 
   const updateStatus = async (status: PresentationStatus) => {
     if (!version) return;
@@ -315,6 +335,13 @@ export default function PresentationStudio({ businessId }: Props) {
             >
               <Sparkles className="h-3.5 w-3.5" />
               AI Editor
+            </button>
+            <button
+              onClick={() => setShowIMImport(true)}
+              className="lumi-btn-ghost"
+            >
+              <FileUp className="h-3.5 w-3.5" />
+              Generate from IM PDF
             </button>
             <button onClick={() => setAdding(true)} className="lumi-btn-primary">
               <Plus className="h-3.5 w-3.5" />
@@ -517,6 +544,17 @@ export default function PresentationStudio({ businessId }: Props) {
           }}
         />
       )}
+
+      <IMImportDialog
+        open={showIMImport}
+        onOpenChange={setShowIMImport}
+        businessId={businessId}
+        hasPublished={hasPublished}
+        onApplied={() => {
+          void load();
+          setHistoryKey((k) => k + 1);
+        }}
+      />
     </div>
   );
 }
