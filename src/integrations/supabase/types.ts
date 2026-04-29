@@ -899,6 +899,57 @@ export type Database = {
         }
         Relationships: []
       }
+      voiceover_scripts: {
+        Row: {
+          approval_status: Database["public"]["Enums"]["voiceover_approval"]
+          business_id: string
+          business_overview: string | null
+          created_at: string
+          financials: string | null
+          growth: string | null
+          id: string
+          location: string | null
+          next_steps: string | null
+          opening: string | null
+          preview_text: string | null
+          style: Database["public"]["Enums"]["voiceover_style"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          approval_status?: Database["public"]["Enums"]["voiceover_approval"]
+          business_id: string
+          business_overview?: string | null
+          created_at?: string
+          financials?: string | null
+          growth?: string | null
+          id?: string
+          location?: string | null
+          next_steps?: string | null
+          opening?: string | null
+          preview_text?: string | null
+          style?: Database["public"]["Enums"]["voiceover_style"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          approval_status?: Database["public"]["Enums"]["voiceover_approval"]
+          business_id?: string
+          business_overview?: string | null
+          created_at?: string
+          financials?: string | null
+          growth?: string | null
+          id?: string
+          location?: string | null
+          next_steps?: string | null
+          opening?: string | null
+          preview_text?: string | null
+          style?: Database["public"]["Enums"]["voiceover_style"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1095,6 +1146,14 @@ export type Database = {
         | "request_information"
         | "start_offer_discussion"
         | "voiceover_script"
+      voiceover_approval: "draft" | "needs_review" | "approved"
+      voiceover_style:
+        | "professional"
+        | "calm"
+        | "premium"
+        | "direct"
+        | "warm"
+        | "investor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1387,6 +1446,15 @@ export const Constants = {
         "request_information",
         "start_offer_discussion",
         "voiceover_script",
+      ],
+      voiceover_approval: ["draft", "needs_review", "approved"],
+      voiceover_style: [
+        "professional",
+        "calm",
+        "premium",
+        "direct",
+        "warm",
+        "investor",
       ],
     },
   },

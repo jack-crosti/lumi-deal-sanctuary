@@ -20,6 +20,8 @@ import {
   Send,
   Check,
   Quote,
+  Headphones,
+  Play,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -278,6 +280,7 @@ export default function BuyerBusiness() {
       {/* Side rail nav (desktop only) */}
       <SideRail activeSection={activeSection} />
 
+      <BrokerWalkthroughSection businessId={business.id} />
       <LocationSection business={business} showExactLocation={showExactLocation} />
       <HighlightsSection business={business} />
       <AboutSection business={business} />
@@ -828,6 +831,94 @@ function AboutSection({ business }: { business: BusinessDetail }) {
 
 /* =====================================================================
  * Financials — oversized stat band
+ * ================================================================== */
+
+/* =====================================================================
+ * Broker walkthrough — placeholder audio player
+ * ================================================================== */
+
+function BrokerWalkthroughSection({ businessId }: { businessId: string }) {
+  const [previewText, setPreviewText] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      // Buyer RLS does not grant access to voiceover_scripts directly. We
+      // attempt the read silently — if it fails or returns nothing we still
+      // show the placeholder, which is the intended state until audio ships.
+      const { data } = await supabase
+        .from("voiceover_scripts")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .select("preview_text,approval_status" as any)
+        .eq("business_id", businessId)
+        .maybeSingle<{ preview_text: string | null; approval_status: string }>();
+      if (!active) return;
+      if (data?.approval_status === "approved" && data.preview_text) {
+        setPreviewText(data.preview_text);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [businessId]);
+
+  return (
+    <section className="scroll-mt-32 relative border-t hairline">
+      <div className="mx-auto max-w-[1600px] px-6 md:px-12 py-20 md:py-28">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+          <div className="lg:col-span-5">
+            <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-5 flex items-center gap-3">
+              <span className="h-px w-8 bg-primary" />
+              <Headphones className="h-3 w-3" />
+              Broker walkthrough
+            </div>
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl tracking-display leading-[1.05] text-balance">
+              A short audio walkthrough from your broker.
+            </h2>
+            {previewText && (
+              <p className="mt-6 text-base md:text-lg text-foreground/80 leading-[1.7] max-w-xl">
+                {previewText}
+              </p>
+            )}
+          </div>
+
+          <div className="lg:col-span-7">
+            <div className="lumi-card p-7 md:p-8">
+              <div className="flex items-center gap-5">
+                <button
+                  type="button"
+                  disabled
+                  aria-label="Audio not yet available"
+                  className="h-14 w-14 rounded-full border hairline flex items-center justify-center bg-card/40 text-muted-foreground cursor-not-allowed flex-shrink-0"
+                >
+                  <Play className="h-5 w-5" />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-2">
+                    Audio · coming soon
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-card/40 border hairline overflow-hidden">
+                    <div className="h-full w-0 bg-primary/40" />
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground tabular-nums">
+                    <span>0:00</span>
+                    <span>—:—</span>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-5 text-[13px] text-muted-foreground leading-[1.6]">
+                Broker walkthrough audio is not available for this opportunity yet.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* =====================================================================
+ * Financials — oversized stat band (continued)
  * ================================================================== */
 
 function FinancialsSection({

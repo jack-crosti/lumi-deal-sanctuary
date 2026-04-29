@@ -48,6 +48,7 @@ import PresentationPreview from "./PresentationPreview";
 import PresentationHistory from "./PresentationHistory";
 import PresentationAIWorkspace from "./PresentationAIWorkspace";
 import IMImportDialog from "./IMImportDialog";
+import VoiceoverScript from "./VoiceoverScript";
 import { History as HistoryIcon, Sparkles, FileUp } from "lucide-react";
 
 interface VersionRow {
@@ -520,6 +521,9 @@ export default function PresentationStudio({ businessId }: Props) {
           onRestored={onRestored}
         />
       </section>
+
+      {/* Voiceover script */}
+      <VoiceoverScript businessId={businessId} />
 
       {/* AI Workspace */}
       {showAIWorkspace && (
