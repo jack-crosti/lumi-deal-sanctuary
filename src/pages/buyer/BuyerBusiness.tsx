@@ -69,6 +69,29 @@ interface BusinessDetail {
   owner_involvement: string | null;
   opening_hours: string | null;
   hero_image_url: string | null;
+  // Financial snapshot
+  gross_profit: number | null;
+  gross_profit_pct: number | null;
+  wage_cost: number | null;
+  wage_pct: number | null;
+  rent_pct_sales: number | null;
+  owner_profit: number | null;
+  add_backs: number | null;
+  asking_price_multiple: number | null;
+  financial_notes: string | null;
+  financial_source:
+    | "accountant"
+    | "gst_returns"
+    | "pos_reports"
+    | "vendor_supplied"
+    | "broker_estimate"
+    | "other"
+    | null;
+  financial_review_status:
+    | "draft"
+    | "needs_verification"
+    | "verified"
+    | "not_available";
 }
 
 const SECTIONS = [
