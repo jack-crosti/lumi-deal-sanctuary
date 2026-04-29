@@ -4,7 +4,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { toast } from "sonner";
-import { ADMIN_EMAIL, getDashboardPathForEmail } from "@/lib/authRoles";
+// Role is fetched server-side from user_roles after sign-in.
 
 type Mode = "signin" | "signup";
 
@@ -24,7 +24,10 @@ export default function Auth() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back.");
-        navigate(getDashboardPathForEmail(email), { replace: true });
+        // Resolve role from server (user_roles), then route accordingly.
+        const { data: roleData } = await supabase.rpc("current_user_role");
+        const dest = roleData === "admin" ? "/admin/dashboard" : "/buyer/dashboard";
+        navigate(dest, { replace: true });
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -79,7 +82,7 @@ export default function Auth() {
           </h1>
           <p className="mt-4 text-sm text-muted-foreground">
             {mode === "signin"
-              ? `${ADMIN_EMAIL} opens Admin. Other accounts open the Buyer channel.`
+              ? "Admins access the broker console. Buyers open their private deal room."
               : "New buyers are reviewed by a broker before listings appear."}
           </p>
         </div>
