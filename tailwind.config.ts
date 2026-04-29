@@ -19,6 +19,9 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        hairline: "hsl(var(--hairline))",
+        bronze: "hsl(var(--bronze))",
+        gold: "hsl(var(--gold))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -57,6 +60,19 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      fontFamily: {
+        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Fraunces", "ui-serif", "Georgia", "serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+      },
+      backgroundImage: {
+        radiance: "var(--gradient-radiance)",
+        edge: "var(--gradient-edge)",
+      },
+      boxShadow: {
+        cinema: "var(--shadow-cinema)",
+        vault: "var(--shadow-vault)",
       },
       borderRadius: {
         lg: "var(--radius)",
