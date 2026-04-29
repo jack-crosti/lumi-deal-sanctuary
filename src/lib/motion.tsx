@@ -109,7 +109,6 @@ export function Reveal({
         willChange: visible ? "auto" : "opacity, transform, filter",
       };
 
-  // @ts-expect-error — element typing varies across tags
   return (
     <Tag
       ref={ref as never}
