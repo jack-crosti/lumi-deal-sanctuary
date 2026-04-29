@@ -129,7 +129,7 @@ export default function BuyerBusiness() {
         supabase
           .from("businesses")
           .select(
-            "id,name,public_title,confidential_title,headline,summary,business_type,industry,location_mode,suburb,city,region,address,asking_price,ebitda,normalised_profit,revenue,stock_value,weekly_sales_min,weekly_sales_max,rent_per_year,lease_expiry,renewal_rights,tenure,staff_summary,owner_involvement,opening_hours,hero_image_url"
+            "id,name,public_title,confidential_title,headline,summary,business_type,industry,location_mode,suburb,city,region,address,asking_price,ebitda,normalised_profit,revenue,stock_value,weekly_sales_min,weekly_sales_max,rent_per_year,lease_expiry,renewal_rights,tenure,staff_summary,owner_involvement,opening_hours,hero_image_url,gross_profit,gross_profit_pct,wage_cost,wage_pct,rent_pct_sales,owner_profit,add_backs,asking_price_multiple,financial_notes,financial_source,financial_review_status"
           )
           .eq("id", businessId)
           .maybeSingle(),
