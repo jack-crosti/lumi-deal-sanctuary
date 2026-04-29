@@ -1523,7 +1523,16 @@ function OfferSection({
               </p>
             </div>
             <button
-              onClick={() => setOpen(true)}
+              onClick={() => {
+                setOpen(true);
+                if (user) {
+                  void logActivity({
+                    buyerId: user.id,
+                    businessId,
+                    event: "offer_started",
+                  });
+                }
+              }}
               className="lumi-btn-primary text-sm md:text-base whitespace-nowrap"
             >
               <HandCoins className="h-3.5 w-3.5" />
