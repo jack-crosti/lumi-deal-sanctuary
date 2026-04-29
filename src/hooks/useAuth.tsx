@@ -24,10 +24,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
       if (newSession?.user) {
+        // Hold loading until we know the role, so route guards don't race.
+        setLoading(true);
         // Defer Supabase calls to avoid deadlock inside the callback
-        setTimeout(() => fetchRole(newSession.user.id), 0);
+        setTimeout(() => {
+          fetchRole(newSession.user.id).finally(() => setLoading(false));
+        }, 0);
       } else {
         setRole(null);
+        setLoading(false);
       }
     });
 
@@ -45,18 +50,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const fetchRole = async (userId: string) => {
+    // Fetch all roles this user has, then prefer 'admin' if present.
     const { data, error } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userId)
-      .order("role", { ascending: true }) // 'admin' < 'buyer' alphabetically
-      .limit(1)
-      .maybeSingle();
+      .eq("user_id", userId);
     if (error) {
+      console.error("[useAuth] failed to fetch role", error);
       setRole(null);
       return;
     }
-    setRole((data?.role as AppRole) ?? null);
+    const roles = (data ?? []).map((r) => r.role as AppRole);
+    if (roles.includes("admin")) setRole("admin");
+    else if (roles.includes("buyer")) setRole("buyer");
+    else setRole(null);
   };
 
   const value = useMemo<AuthContextValue>(
