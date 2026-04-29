@@ -24,6 +24,33 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Require an authenticated caller. Without this, anyone could invoke the
+    // function (anonymously) with any request_id and trigger service-role
+    // lookups of buyer PII / send admin email spam once Resend is wired up.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Not authenticated" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Not authenticated" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const callerId = userData.user.id;
+
     const body = (await req.json()) as Payload;
     if (!body?.request_id || typeof body.request_id !== "string") {
       return new Response(
@@ -32,8 +59,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const admin = createClient(supabaseUrl, serviceKey);
 
     // Validate request exists. Service role bypasses RLS.
@@ -49,6 +74,22 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Request not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Authorize: only the buyer who owns the request OR an admin can trigger
+    // the notification for that request.
+    const { data: roleRow } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callerId)
+      .eq("role", "admin")
+      .maybeSingle();
+    const isAdmin = !!roleRow;
+    if (!isAdmin && request.buyer_id !== callerId) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
