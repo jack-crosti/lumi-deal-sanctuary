@@ -338,12 +338,16 @@ export type Database = {
       }
       documents: {
         Row: {
+          availability: Database["public"]["Enums"]["document_availability"]
           business_id: string
           created_at: string
           doc_type: Database["public"]["Enums"]["document_type"]
+          download_allowed: boolean
           file_size: number | null
           id: string
           mime_type: string | null
+          notes: string | null
+          required_access_level: Database["public"]["Enums"]["access_level"]
           storage_path: string | null
           title: string
           updated_at: string
@@ -351,12 +355,16 @@ export type Database = {
           visibility: Database["public"]["Enums"]["document_visibility"]
         }
         Insert: {
+          availability?: Database["public"]["Enums"]["document_availability"]
           business_id: string
           created_at?: string
           doc_type?: Database["public"]["Enums"]["document_type"]
+          download_allowed?: boolean
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          notes?: string | null
+          required_access_level?: Database["public"]["Enums"]["access_level"]
           storage_path?: string | null
           title: string
           updated_at?: string
@@ -364,12 +372,16 @@ export type Database = {
           visibility?: Database["public"]["Enums"]["document_visibility"]
         }
         Update: {
+          availability?: Database["public"]["Enums"]["document_availability"]
           business_id?: string
           created_at?: string
           doc_type?: Database["public"]["Enums"]["document_type"]
+          download_allowed?: boolean
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          notes?: string | null
+          required_access_level?: Database["public"]["Enums"]["access_level"]
           storage_path?: string | null
           title?: string
           updated_at?: string
@@ -663,6 +675,7 @@ export type Database = {
         | "offer_started"
         | "offer_submitted"
         | "return_visit"
+        | "document_access_request"
       app_role: "admin" | "buyer"
       business_status:
         | "draft"
@@ -684,6 +697,7 @@ export type Database = {
         | "family_office"
         | "other"
       ca_status: "not_sent" | "sent" | "signed" | "approved"
+      document_availability: "hidden" | "available" | "requires_approval"
       document_type:
         | "im"
         | "financials"
@@ -879,6 +893,7 @@ export const Constants = {
         "offer_started",
         "offer_submitted",
         "return_visit",
+        "document_access_request",
       ],
       app_role: ["admin", "buyer"],
       business_status: [
@@ -904,6 +919,7 @@ export const Constants = {
         "other",
       ],
       ca_status: ["not_sent", "sent", "signed", "approved"],
+      document_availability: ["hidden", "available", "requires_approval"],
       document_type: [
         "im",
         "financials",
