@@ -1277,16 +1277,36 @@ function AskSection({ businessId }: { businessId: string }) {
       return;
     }
 
-    void supabase.from("buyer_activity").insert({
-      buyer_id: user.id,
-      business_id: businessId,
-      event_type: "request_submitted",
+    void logActivity({
+      buyerId: user.id,
+      businessId,
+      event: "request_submitted",
       metadata: {
         request_id: (inserted as { id: string }).id,
         request_type: requestType,
         priority,
+        preferred_contact: contactMethod,
       },
     });
+    if (requestType === "general") {
+      void logActivity({
+        buyerId: user.id,
+        businessId,
+        event: "question_submitted",
+        metadata: { request_id: (inserted as { id: string }).id },
+      });
+    }
+    if (wantsCall) {
+      void logActivity({
+        buyerId: user.id,
+        businessId,
+        event: "call_request",
+        metadata: {
+          request_id: (inserted as { id: string }).id,
+          preferred_call_time: callTime.trim() || null,
+        },
+      });
+    }
 
     // Fire-and-forget admin notification (placeholder — currently logs only)
     void supabase.functions
