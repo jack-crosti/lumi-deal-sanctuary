@@ -31,6 +31,9 @@ import { BuyerStatusPill, CaStatusPill } from "@/components/admin/BuyerStatusPil
 import { BuyerAccessManager } from "@/components/admin/BuyerAccessManager";
 import { BuyerForm } from "@/components/admin/BuyerForm";
 import { formatCurrency, formatRelative } from "@/lib/format";
+import { IntentScoreCard } from "@/components/admin/IntentScore";
+import ActivityFeed from "@/components/admin/ActivityFeed";
+import { computeIntentScore, suggestedNextAction, type ActivityRow } from "@/lib/intentScore";
 
 interface BuyerProfile {
   id: string;
@@ -59,6 +62,8 @@ interface BuyerProfile {
 const TABS = [
   { value: "overview", label: "Overview" },
   { value: "access", label: "Business Access" },
+  { value: "intent", label: "Intent" },
+  { value: "activity", label: "Activity" },
   { value: "edit", label: "Edit profile" },
 ] as const;
 
@@ -176,6 +181,12 @@ export default function AdminBuyerDetail() {
           </TabsContent>
           <TabsContent value="access" className="mt-0">
             <BuyerAccessManager buyerId={b.id} />
+          </TabsContent>
+          <TabsContent value="intent" className="mt-0">
+            <BuyerIntent buyerId={b.id} />
+          </TabsContent>
+          <TabsContent value="activity" className="mt-0">
+            <ActivityFeed buyerId={b.id} showFilters />
           </TabsContent>
           <TabsContent value="edit" className="mt-0">
             <BuyerForm
