@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_edit_requests: {
+        Row: {
+          admin_id: string
+          approval_status: Database["public"]["Enums"]["ai_edit_approval"]
+          business_id: string
+          created_at: string
+          error_message: string | null
+          id: string
+          instruction: string
+          result_preview: string | null
+          status: Database["public"]["Enums"]["ai_edit_status"]
+          target_block_id: string | null
+          updated_at: string
+          version_id: string | null
+        }
+        Insert: {
+          admin_id: string
+          approval_status?: Database["public"]["Enums"]["ai_edit_approval"]
+          business_id: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          instruction: string
+          result_preview?: string | null
+          status?: Database["public"]["Enums"]["ai_edit_status"]
+          target_block_id?: string | null
+          updated_at?: string
+          version_id?: string | null
+        }
+        Update: {
+          admin_id?: string
+          approval_status?: Database["public"]["Enums"]["ai_edit_approval"]
+          business_id?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          instruction?: string
+          result_preview?: string | null
+          status?: Database["public"]["Enums"]["ai_edit_status"]
+          target_block_id?: string | null
+          updated_at?: string
+          version_id?: string | null
+        }
+        Relationships: []
+      }
       businesses: {
         Row: {
           address: string | null
@@ -818,6 +863,13 @@ export type Database = {
         | "documents_section_view"
         | "lease_view"
         | "call_request"
+      ai_edit_approval: "unreviewed" | "approved" | "rejected"
+      ai_edit_status:
+        | "pending"
+        | "processing"
+        | "applied"
+        | "rejected"
+        | "failed"
       app_role: "admin" | "buyer"
       block_review_status: "draft" | "needs_review" | "approved"
       business_status:
@@ -1068,6 +1120,14 @@ export const Constants = {
         "documents_section_view",
         "lease_view",
         "call_request",
+      ],
+      ai_edit_approval: ["unreviewed", "approved", "rejected"],
+      ai_edit_status: [
+        "pending",
+        "processing",
+        "applied",
+        "rejected",
+        "failed",
       ],
       app_role: ["admin", "buyer"],
       block_review_status: ["draft", "needs_review", "approved"],
