@@ -133,6 +133,7 @@ export type Database = {
           business_id: string | null
           buyer_id: string
           created_at: string
+          device_type: string | null
           event_type: Database["public"]["Enums"]["activity_event"]
           id: string
           ip: string | null
@@ -143,6 +144,7 @@ export type Database = {
           business_id?: string | null
           buyer_id: string
           created_at?: string
+          device_type?: string | null
           event_type: Database["public"]["Enums"]["activity_event"]
           id?: string
           ip?: string | null
@@ -153,6 +155,7 @@ export type Database = {
           business_id?: string | null
           buyer_id?: string
           created_at?: string
+          device_type?: string | null
           event_type?: Database["public"]["Enums"]["activity_event"]
           id?: string
           ip?: string | null
@@ -739,6 +742,11 @@ export type Database = {
         | "offer_submitted"
         | "return_visit"
         | "document_access_request"
+        | "dashboard_view"
+        | "hero_view"
+        | "documents_section_view"
+        | "lease_view"
+        | "call_request"
       app_role: "admin" | "buyer"
       business_status:
         | "draft"
@@ -978,6 +986,11 @@ export const Constants = {
         "offer_submitted",
         "return_visit",
         "document_access_request",
+        "dashboard_view",
+        "hero_view",
+        "documents_section_view",
+        "lease_view",
+        "call_request",
       ],
       app_role: ["admin", "buyer"],
       business_status: [
