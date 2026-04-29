@@ -19,6 +19,7 @@ import {
 import { formatCurrency, formatDate, formatRelative } from "@/lib/format";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import BusinessDocuments from "@/components/admin/BusinessDocuments";
+import BusinessOfferInterest from "@/components/admin/BusinessOfferInterest";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -225,10 +226,7 @@ export default function AdminBusinessDetail() {
             />
           </TabsContent>
           <TabsContent value="offers" className="mt-0">
-            <PlaceholderPanel
-              title="Offer Interest"
-              body="Indicative offers and discussion requests submitted by approved buyers."
-            />
+            <BusinessOfferInterest businessId={b.id} />
           </TabsContent>
           <TabsContent value="settings" className="mt-0">
             <Settings
