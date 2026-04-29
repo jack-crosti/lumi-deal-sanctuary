@@ -1,54 +1,42 @@
-I understand. The current blocker is not the password: `jack@lumi.nz` exists and is already assigned the admin role. The app is getting stuck because the frontend waits on a database role lookup after login, and that lookup is intermittently returning `503 / schema cache retrying`, so the route guard keeps showing “Verifying access…” or eventually sends you to the wrong place.
+## Goal
 
-I will simplify and harden the login flow now.
+Replace every user-facing mention of "mandate / mandates" with "Information Memorandum" (or a natural short form) across the app. No logic, schema, or routing changes — copy only.
 
-## Plan
+## Wording rules
 
-1. Replace the fragile post-login role lookup for routing
-   - Make the app determine the active area directly from the signed-in email:
-     - `jack@lumi.nz` → Admin
-     - every other signed-in email → Buyer
-   - Keep the existing `user_roles` table and database RLS policies in place for backend protection.
-   - Stop the UI from depending on `user_roles` just to decide which page to load.
+To keep sentences readable, use these context-appropriate replacements rather than a blind find-and-replace:
 
-2. Fix the “Verifying access…” loop
-   - Update `useAuth` so initial auth loading only waits for the actual session, not a separate database role request.
-   - Remove the retry loop that can keep the user stuck for too long.
-   - Ensure the role is immediately available from the session email once login succeeds.
+- "mandate" / "mandates" (generic noun, listings) → **Information Memorandum** / **Information Memorandums**
+- "Active mandates" (stat label) → **Active Information Memorandums**
+- "New mandate" / "Create new mandate" / "Create first mandate" → **New Information Memorandum** / **Create new Information Memorandum** / **Create first Information Memorandum**
+- "Edit mandate" → **Edit Information Memorandum**
+- "Confidential mandate" → **Confidential Information Memorandum**
+- "Mandates closed since 2019" → **Information Memorandums closed since 2019**
+- "Our mandate" (Index hero link + heading) → **Our approach**  *(this one is editorial copy about the firm's stance, not a deal document — "Information Memorandum" doesn't fit. Will flag if you'd prefer a literal swap.)*
+- "the mandated broker" → **the assigned broker**
+- "this mandate" (in admin body copy) → **this Information Memorandum**
+- `eyebrow={b.business_type || "Mandate"}` fallback → **"Information Memorandum"**
+- BuyerAccessManager fallback label `"Mandate"` → **"Information Memorandum"**
 
-3. Make the login page clearer
-   - Keep one simple login page at `/login`.
-   - Add clear UI copy explaining:
-     - `jack@lumi.nz` opens the Admin broker console.
-     - other approved accounts open the Buyer private channel.
-   - After login, navigate directly to the correct dashboard instead of bouncing through `/`.
+## Files to edit
 
-4. Make route guards deterministic
-   - `/admin/*` allows only `jack@lumi.nz`.
-   - `/buyer/*` allows any signed-in non-admin email.
-   - If an admin lands on buyer routes, send them to `/admin/dashboard`.
-   - If a buyer lands on admin routes, send them to `/buyer/dashboard` or `/unauthorized` with a clear message.
+1. `src/pages/Index.tsx` — anchor link, hero stat, badge text, section id/heading/subhead (lines 50, 121, 154, 177, 179, 185, 189). Note: section `id="mandate"` and `href="#mandate"` will be renamed to `id="approach"` to match the new heading.
+2. `src/pages/buyer/BuyerDashboard.tsx` — sign-in description and empty state (lines 76, 213).
+3. `src/pages/buyer/BuyerBusiness.tsx` — "Confidential mandate" badge, "mandated broker" title (lines 347, 865).
+4. `src/pages/admin/AdminBusinessDetail.tsx` — eyebrow fallback, BuyerAccess card body (lines 139, 212).
+5. `src/pages/admin/AdminActivity.tsx` — page description (line 9).
+6. `src/pages/admin/AdminBusinesses.tsx` — eyebrow (line 116).
+7. `src/pages/admin/AdminBusinessEdit.tsx` — eyebrow (line 70).
+8. `src/pages/admin/AdminBusinessNew.tsx` — eyebrow (line 10).
+9. `src/pages/admin/AdminDashboard.tsx` — stat label, quick action, page description, button, empty-state heading + CTA (lines 7, 14, 28, 32, 85, 88, 98, 107).
+10. `src/components/admin/BuyerAccessManager.tsx` — fallback label (line 176).
 
-5. Reduce confusing unauthorized states
-   - Update the unauthorized page copy so it explains which account is signed in and where it should go.
-   - Make the “Back to your deal room” button route to the correct dashboard based on email.
+## Out of scope
 
-6. Test after changes
-   - Run the app test suite.
-   - Verify the affected files compile through the automatic checks.
-   - Manually review the expected flows:
-     - `jack@lumi.nz` login → `/admin/dashboard`
-     - other email login → `/buyer/dashboard`
-     - logged-out admin route → `/login`
-     - buyer trying admin route → no admin access
+- No database column, enum, or route renames.
+- No changes to document type label "Information Memorandum" (already correct).
+- No design or layout changes.
 
-## Technical details
+## Verification
 
-Files to update:
-- `src/hooks/useAuth.tsx`
-- `src/components/RouteGuards.tsx`
-- `src/pages/Auth.tsx`
-- `src/pages/Unauthorized.tsx`
-- possibly `src/pages/Index.tsx` if it still relies on the old role lookup
-
-No database change is required for this fix. The existing admin role record for `jack@lumi.nz` is present, but the UI should not be blocked by a database role query when the requested rule is email-based routing.
+After edits, re-run `rg -i "mandate"` to confirm zero remaining occurrences (except possibly the renamed `#approach` anchor, which should also be clean).
