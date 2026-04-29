@@ -16,6 +16,7 @@ import {
 import { PageHeader } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import BusinessOfferInterest from "@/components/admin/BusinessOfferInterest";
 import {
   REQUEST_STATUS_OPTIONS,
   contactMethodLabel,
@@ -224,6 +225,23 @@ export default function AdminRequests() {
           ))}
         </div>
       )}
+
+      {/* Offer interest */}
+      <section className="mt-16 pt-10 border-t hairline">
+        <div className="mb-6">
+          <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-2">
+            Offer discussions
+          </div>
+          <h2 className="font-display text-2xl md:text-3xl tracking-display">
+            Offer interest
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+            Indicative offers and discussion requests submitted by approved buyers.
+            These are not binding agreements — they are conversations to triage.
+          </p>
+        </div>
+        <BusinessOfferInterest />
+      </section>
     </>
   );
 }

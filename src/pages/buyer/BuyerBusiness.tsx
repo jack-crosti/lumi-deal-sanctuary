@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import BuyerDocuments from "@/components/buyer/BuyerDocuments";
+import OfferDiscussionDialog from "@/components/buyer/OfferDiscussionDialog";
 import { formatCurrency } from "@/lib/format";
 import { ACCESS_LEVEL_OPTIONS, type AccessLevel } from "@/lib/buyerLabels";
 import {
@@ -231,7 +232,7 @@ export default function BuyerBusiness() {
       </SectionFrame>
 
       <AskSection businessId={business.id} />
-      <OfferSection businessId={business.id} />
+      <OfferSection businessId={business.id} businessName={business.public_title || business.name} />
 
       <Footer business={business} />
     </div>
@@ -1406,38 +1407,14 @@ function AskSection({ businessId }: { businessId: string }) {
  * Offer
  * ================================================================== */
 
-function OfferSection({ businessId }: { businessId: string }) {
-  const { user } = useAuth();
-  const [amount, setAmount] = useState("");
-  const [terms, setTerms] = useState("");
-  const [accepted, setAccepted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-
-  const submit = async () => {
-    if (!user || !accepted) return;
-    setSubmitting(true);
-    const numericAmount = amount ? Number(amount.replace(/[^\d.]/g, "")) : null;
-    const { error } = await supabase.from("offer_interest").insert({
-      buyer_id: user.id,
-      business_id: businessId,
-      indicative_amount: numericAmount,
-      terms: terms.trim() || null,
-      disclaimer_accepted: true,
-      status: "submitted",
-      submitted_at: new Date().toISOString(),
-    });
-    setSubmitting(false);
-    if (error) return toast.error(error.message);
-    void supabase.from("buyer_activity").insert({
-      buyer_id: user.id,
-      business_id: businessId,
-      event_type: "offer_submitted",
-      metadata: { indicative_amount: numericAmount },
-    });
-    setSubmitted(true);
-    toast.success("Offer discussion request sent.");
-  };
+function OfferSection({
+  businessId,
+  businessName,
+}: {
+  businessId: string;
+  businessName: string;
+}) {
+  const [open, setOpen] = useState(false);
 
   return (
     <section
@@ -1460,96 +1437,48 @@ function OfferSection({ businessId }: { businessId: string }) {
           </div>
           <div className="lg:col-span-5 lg:col-start-8 lg:pt-4">
             <p className="text-lg md:text-xl text-foreground/80 leading-[1.7] max-w-xl">
-              This is not a binding offer — it opens a confidential conversation with the broker
-              and signals you are ready to discuss real next steps.
+              If you are seriously interested in this business, you can start an offer
+              discussion here. This does not create a binding agreement. It simply helps
+              the broker understand your proposed terms before preparing the correct
+              next step.
             </p>
           </div>
         </div>
 
         <div className="lumi-card-elevated grain p-8 md:p-14 max-w-5xl">
-          {submitted ? (
-            <div className="py-8">
-              <Check className="h-7 w-7 text-primary mb-5" />
-              <h3 className="font-display text-3xl md:text-4xl tracking-display mb-4">
-                Discussion opened.
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+            <div className="max-w-xl">
+              <h3 className="font-display text-2xl md:text-3xl tracking-display mb-3">
+                Ready to open the conversation?
               </h3>
-              <p className="text-base md:text-lg text-muted-foreground max-w-xl leading-[1.7]">
-                The broker has been notified and will reach out shortly to discuss next steps and
-                prepare appropriate documentation.
+              <p className="text-sm md:text-base text-muted-foreground leading-[1.7]">
+                A short, structured form covering price, conditions, timing and your
+                advisors. The broker will reach out personally to discuss next steps.
               </p>
             </div>
-          ) : (
-            <>
-              <div className="grid md:grid-cols-2 gap-6 md:gap-10">
-                <div>
-                  <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 block">
-                    Indicative amount (NZD)
-                  </label>
-                  <input
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="e.g. 850,000"
-                    className="lumi-input text-base md:text-lg"
-                  />
-                </div>
-                <div>
-                  <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 block">
-                    Settlement preference
-                  </label>
-                  <input
-                    value={terms.split("\n")[0] || ""}
-                    onChange={(e) => setTerms(e.target.value)}
-                    placeholder="e.g. 60 days, subject to DD"
-                    className="lumi-input text-base md:text-lg"
-                  />
-                </div>
-              </div>
-              <div className="mt-6">
-                <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 block">
-                  Notes for the broker
-                </label>
-                <textarea
-                  value={terms}
-                  onChange={(e) => setTerms(e.target.value)}
-                  rows={5}
-                  placeholder="Conditions, finance status, structure preference…"
-                  className="lumi-input resize-none text-base md:text-lg leading-[1.6]"
-                />
-              </div>
-              <label className="mt-8 flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={accepted}
-                  onChange={(e) => setAccepted(e.target.checked)}
-                  className="mt-1 size-4 accent-primary"
-                />
-                <span className="text-xs md:text-sm text-muted-foreground leading-[1.7]">
-                  This is not a binding agreement. My offer details will be sent to the broker, who
-                  will contact me to discuss next steps and prepare the correct documentation if
-                  appropriate.
-                </span>
-              </label>
-              <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-                <p className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
-                  Strictly confidential · broker only
-                </p>
-                <button
-                  onClick={submit}
-                  disabled={!accepted || submitting}
-                  className="lumi-btn-primary disabled:opacity-50"
-                >
-                  {submitting ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <HandCoins className="h-3.5 w-3.5" />
-                  )}
-                  Submit offer discussion
-                </button>
-              </div>
-            </>
-          )}
+            <button
+              onClick={() => setOpen(true)}
+              className="lumi-btn-primary text-sm md:text-base whitespace-nowrap"
+            >
+              <HandCoins className="h-3.5 w-3.5" />
+              Start Offer Discussion
+            </button>
+          </div>
+
+          <div className="mt-8 pt-6 border-t hairline flex items-start gap-3">
+            <span className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
+              Strictly confidential · broker only · not a binding agreement
+            </span>
+          </div>
         </div>
       </div>
+
+      <OfferDiscussionDialog
+        open={open}
+        onOpenChange={setOpen}
+        businessId={businessId}
+        businessName={businessName}
+      />
     </section>
   );
 }
