@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import {
   ArrowLeft,
+  ArrowRight,
   Loader2,
   Lock,
   MapPin,
@@ -61,20 +62,20 @@ interface BusinessDetail {
 }
 
 const SECTIONS = [
-  { id: "hero", label: "Overview" },
-  { id: "location", label: "Location" },
-  { id: "highlights", label: "Highlights" },
-  { id: "about", label: "Business" },
-  { id: "financials", label: "Financials" },
-  { id: "lease", label: "Lease" },
-  { id: "operations", label: "Operations" },
-  { id: "growth", label: "Growth" },
-  { id: "fit", label: "Buyer Fit" },
-  { id: "risks", label: "Due Diligence" },
-  { id: "gallery", label: "Gallery" },
-  { id: "documents", label: "Documents" },
-  { id: "ask", label: "Ask" },
-  { id: "offer", label: "Offer" },
+  { id: "hero", label: "Overview", num: "01" },
+  { id: "location", label: "Location", num: "02" },
+  { id: "highlights", label: "Highlights", num: "03" },
+  { id: "about", label: "Business", num: "04" },
+  { id: "financials", label: "Financials", num: "05" },
+  { id: "lease", label: "Lease", num: "06" },
+  { id: "operations", label: "Operations", num: "07" },
+  { id: "growth", label: "Growth", num: "08" },
+  { id: "fit", label: "Buyer Fit", num: "09" },
+  { id: "risks", label: "Diligence", num: "10" },
+  { id: "gallery", label: "Gallery", num: "11" },
+  { id: "documents", label: "File room", num: "12" },
+  { id: "ask", label: "Ask", num: "13" },
+  { id: "offer", label: "Offer", num: "14" },
 ];
 
 export default function BuyerBusiness() {
@@ -167,10 +168,10 @@ export default function BuyerBusiness() {
     ACCESS_LEVEL_OPTIONS.find((o) => o.value === accessLevel)?.label ?? "Teaser";
 
   return (
-    <div className="-mx-6 md:-mx-12 -my-14 md:-my-20">
-      {/* Back bar */}
-      <div className="sticky top-20 z-20 border-b hairline bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto max-w-[1400px] px-6 md:px-12 py-3 flex items-center justify-between gap-4">
+    <div className="-mx-6 md:-mx-12 -my-14 md:-my-20 bg-background text-foreground">
+      {/* Top utility bar — quiet, editorial */}
+      <div className="sticky top-20 z-30 border-b hairline bg-background/85 backdrop-blur-xl">
+        <div className="mx-auto max-w-[1600px] px-6 md:px-12 py-3 flex items-center justify-between gap-4">
           <Link
             to="/buyer/dashboard"
             className="inline-flex items-center gap-2 font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground hover:text-primary transition-colors"
@@ -178,6 +179,11 @@ export default function BuyerBusiness() {
             <ArrowLeft className="h-3 w-3" />
             All opportunities
           </Link>
+          <div className="hidden md:flex items-center gap-3 font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
+            <span>Lumi Private</span>
+            <span className="size-1 rounded-full bg-hairline" />
+            <span>File no. {business.id.slice(0, 6).toUpperCase()}</span>
+          </div>
           <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 font-mono-brand text-[9px] tracking-eyebrow uppercase border border-primary/40 bg-primary/10 text-primary">
             <span className="size-1.5 rounded-full bg-primary animate-shimmer" />
             {accessLabel} access
@@ -185,120 +191,174 @@ export default function BuyerBusiness() {
         </div>
       </div>
 
-      <div className="relative mx-auto max-w-[1400px] px-6 md:px-12 py-12 md:py-16">
-        <div className="lg:grid lg:grid-cols-[200px_1fr] lg:gap-12">
-          {/* Sticky side nav (desktop) */}
-          <aside className="hidden lg:block">
-            <nav className="sticky top-36 space-y-1">
-              <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-4 pl-3">
-                Sections
-              </div>
-              {SECTIONS.map((s) => (
-                <a
-                  key={s.id}
-                  href={`#${s.id}`}
-                  className={`block pl-3 pr-2 py-1.5 text-[10px] tracking-eyebrow uppercase border-l transition-all duration-300 ${
-                    activeSection === s.id
-                      ? "border-primary text-primary"
-                      : "border-hairline text-muted-foreground hover:text-foreground hover:border-foreground/40"
-                  }`}
-                >
-                  {s.label}
-                </a>
-              ))}
-            </nav>
-          </aside>
+      <HeroFullBleed
+        business={business}
+        showFinancials={showFinancials}
+        showExactLocation={showExactLocation}
+      />
 
-          <div className="space-y-28 md:space-y-36">
-            <HeroSection
-              business={business}
-              showFinancials={showFinancials}
-              showExactLocation={showExactLocation}
-            />
-            <LocationSection business={business} showExactLocation={showExactLocation} />
-            <HighlightsSection business={business} />
-            <AboutSection business={business} />
-            <FinancialsSection business={business} showFinancials={showFinancials} />
-            <LeaseSection business={business} showFinancials={showFinancials} />
-            <OperationsSection business={business} />
-            <GrowthSection />
-            <BuyerFitSection />
-            <RisksSection />
-            <GallerySection business={business} />
-            <section id="documents" className="scroll-mt-32">
-              <SectionEyebrow icon={FileSignature} eyebrow="File room" title="Supporting documents" />
-              <div className="mt-10">
-                <BuyerDocuments businessId={business.id} />
-              </div>
-            </section>
-            <AskSection businessId={business.id} />
-            <OfferSection businessId={business.id} />
-          </div>
-        </div>
-      </div>
+      {/* Side rail nav (desktop only) */}
+      <SideRail activeSection={activeSection} />
+
+      <LocationSection business={business} showExactLocation={showExactLocation} />
+      <HighlightsSection business={business} />
+      <AboutSection business={business} />
+      <FinancialsSection business={business} showFinancials={showFinancials} />
+      <LeaseSection business={business} showFinancials={showFinancials} />
+      <OperationsSection business={business} />
+      <GrowthSection />
+      <BuyerFitSection />
+      <RisksSection />
+      <GallerySection business={business} />
+
+      {/* File room */}
+      <SectionFrame
+        id="documents"
+        eyebrow="12 — File room"
+        title="Supporting documents."
+        intro="Released in stages as your access progresses."
+        icon={FileSignature}
+      >
+        <BuyerDocuments businessId={business.id} />
+      </SectionFrame>
+
+      <AskSection businessId={business.id} />
+      <OfferSection businessId={business.id} />
+
+      <Footer business={business} />
     </div>
   );
 }
 
-/* ---------- Shared atoms ---------- */
+/* =====================================================================
+ * Cinematic side rail (desktop)
+ * ================================================================== */
 
-function SectionEyebrow({
-  icon: Icon,
+function SideRail({ activeSection }: { activeSection: string }) {
+  return (
+    <nav className="hidden xl:block fixed top-1/2 -translate-y-1/2 right-6 z-20">
+      <div className="space-y-2.5">
+        {SECTIONS.map((s) => {
+          const active = activeSection === s.id;
+          return (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              className="group flex items-center justify-end gap-3"
+              aria-label={s.label}
+            >
+              <span
+                className={`font-mono-brand text-[9px] tracking-eyebrow uppercase transition-all duration-500 ${
+                  active
+                    ? "text-primary opacity-100 translate-x-0"
+                    : "text-muted-foreground opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
+                }`}
+              >
+                {s.label}
+              </span>
+              <span
+                className={`block transition-all duration-500 ${
+                  active
+                    ? "h-px w-10 bg-primary"
+                    : "h-px w-5 bg-hairline group-hover:bg-foreground/60 group-hover:w-8"
+                }`}
+              />
+            </a>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+/* =====================================================================
+ * Section framing primitives
+ * ================================================================== */
+
+function SectionFrame({
+  id,
   eyebrow,
   title,
   intro,
+  icon: Icon,
+  children,
+  tone = "default",
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  id: string;
   eyebrow: string;
   title: string;
   intro?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+  tone?: "default" | "deep";
 }) {
   return (
-    <div className="max-w-3xl">
-      <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-5 flex items-center gap-3">
-        <span className="h-px w-8 bg-primary" />
-        <Icon className="h-3 w-3" />
-        {eyebrow}
+    <section
+      id={id}
+      className={`scroll-mt-32 relative border-t hairline ${
+        tone === "deep" ? "bg-background-deep/40" : ""
+      }`}
+    >
+      <div className="mx-auto max-w-[1600px] px-6 md:px-12 py-32 md:py-44">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 mb-16 md:mb-20">
+          <div className="lg:col-span-5">
+            <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-6 flex items-center gap-3">
+              <span className="h-px w-8 bg-primary" />
+              {Icon && <Icon className="h-3 w-3" />}
+              {eyebrow}
+            </div>
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl tracking-display leading-[1.0] text-balance">
+              {title}
+            </h2>
+          </div>
+          {intro && (
+            <div className="lg:col-span-6 lg:col-start-7 lg:pt-4">
+              <p className="text-lg md:text-xl text-foreground/80 leading-[1.7] max-w-2xl">
+                {intro}
+              </p>
+            </div>
+          )}
+        </div>
+        {children}
       </div>
-      <h2 className="font-display text-3xl md:text-5xl tracking-display leading-[1.05] text-balance">
-        {title}
-      </h2>
-      {intro && (
-        <p className="mt-6 text-base md:text-lg text-muted-foreground leading-[1.8] max-w-2xl">
-          {intro}
-        </p>
-      )}
-    </div>
+    </section>
   );
 }
 
-function StatBlock({
+function PullStat({
   label,
   value,
   sub,
   locked,
+  size = "md",
 }: {
   label: string;
   value: string;
   sub?: string;
   locked?: boolean;
+  size?: "md" | "lg" | "xl";
 }) {
+  const sizeClass =
+    size === "xl"
+      ? "text-7xl md:text-[8rem]"
+      : size === "lg"
+      ? "text-5xl md:text-7xl"
+      : "text-4xl md:text-5xl";
   return (
-    <div className="relative lumi-card p-7 overflow-hidden">
-      <div className="absolute top-3 right-3 size-2 border-t border-r border-primary/30" />
-      <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 flex items-center gap-2">
+    <div className="border-t hairline pt-6">
+      <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-4 flex items-center gap-2">
         {locked && <Lock className="h-3 w-3 text-primary/60" />}
         {label}
       </div>
       <div
-        className={`lumi-stat text-3xl md:text-4xl ${
-          locked ? "text-muted-foreground/60" : "text-foreground"
+        className={`lumi-stat ${sizeClass} ${
+          locked ? "text-muted-foreground/50" : "text-foreground"
         }`}
       >
         {value}
       </div>
       {sub && (
-        <div className="mt-2 font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
+        <div className="mt-3 font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
           {sub}
         </div>
       )}
@@ -306,9 +366,11 @@ function StatBlock({
   );
 }
 
-/* ---------- Hero ---------- */
+/* =====================================================================
+ * Hero — full-bleed, Apple-style
+ * ================================================================== */
 
-function HeroSection({
+function HeroFullBleed({
   business,
   showFinancials,
   showExactLocation,
@@ -322,95 +384,122 @@ function HeroSection({
   const locationLine = locationDisplay(business, showExactLocation);
 
   return (
-    <section id="hero" className="scroll-mt-32 -mt-12 md:-mt-16">
-      <div className="relative lumi-card-elevated overflow-hidden grain">
-        {/* Hero image */}
-        <div className="relative aspect-[16/10] md:aspect-[21/9] overflow-hidden">
-          {business.hero_image_url ? (
-            <img
-              src={business.hero_image_url}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-card to-background-deep" />
-          )}
-          <div className="absolute inset-0 bg-radiance opacity-70 pointer-events-none" />
-          <div className="absolute inset-0 bg-vignette pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background via-background/80 to-transparent" />
+    <section id="hero" className="relative scroll-mt-32">
+      {/* Full-viewport image */}
+      <div className="relative h-[100svh] min-h-[680px] w-full overflow-hidden">
+        {business.hero_image_url ? (
+          <img
+            src={business.hero_image_url}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover scale-[1.03]"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-card to-background-deep" />
+        )}
+        {/* Cinematic stack: vignette + radiance + bottom-fade to bg */}
+        <div className="absolute inset-0 bg-vignette pointer-events-none" />
+        <div className="absolute inset-0 bg-radiance opacity-60 pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background via-background/85 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background/70 to-transparent pointer-events-none" />
+
+        {/* Corner ticks */}
+        <span className="absolute top-8 left-8 size-4 border-t border-l border-primary/60" />
+        <span className="absolute top-8 right-8 size-4 border-t border-r border-primary/60" />
+
+        {/* Editorial caption — bottom-left */}
+        <div className="absolute inset-x-0 bottom-0">
+          <div className="mx-auto max-w-[1600px] px-6 md:px-12 pb-20 md:pb-28">
+            <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-6 flex items-center gap-3 animate-rise">
+              <span className="h-px w-10 bg-primary" />
+              Confidential Information Memorandum
+              {business.business_type && (
+                <span className="text-muted-foreground">· {business.business_type}</span>
+              )}
+            </div>
+            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[7.5rem] tracking-display leading-[0.92] text-balance max-w-5xl animate-rise delay-100">
+              {title}
+            </h1>
+            {business.headline && (
+              <p className="mt-8 font-display-italic text-xl md:text-3xl text-foreground/85 max-w-3xl leading-[1.35] text-balance animate-rise delay-200">
+                {business.headline}
+              </p>
+            )}
+            <div className="mt-8 flex items-center gap-3 text-sm text-muted-foreground animate-rise delay-300">
+              {showExactLocation ? (
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+              ) : (
+                <Lock className="h-3.5 w-3.5 text-primary" />
+              )}
+              <span>{locationLine}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Hero content */}
-        <div className="relative -mt-32 md:-mt-48 px-6 md:px-14 pb-14 md:pb-16">
-          <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-5 flex items-center gap-3 animate-rise">
-            <span className="h-px w-8 bg-primary" />
-            Confidential Information Memorandum
-            {business.business_type && <span className="text-muted-foreground">· {business.business_type}</span>}
-          </div>
-          <h1 className="font-display text-4xl md:text-6xl lg:text-7xl tracking-display leading-[1.0] text-balance max-w-4xl animate-rise delay-100">
-            {title}
-          </h1>
-          {business.headline && (
-            <p className="mt-6 font-display-italic text-lg md:text-2xl text-foreground/85 max-w-2xl leading-[1.4] animate-rise delay-200">
-              {business.headline}
-            </p>
-          )}
-
-          <div className="mt-7 flex items-center gap-2 text-sm text-muted-foreground animate-rise delay-300">
-            {showExactLocation ? (
-              <MapPin className="h-3.5 w-3.5 text-primary" />
-            ) : (
-              <Lock className="h-3.5 w-3.5 text-primary" />
-            )}
-            <span>{locationLine}</span>
-          </div>
-
-          {/* Stat row */}
-          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5 animate-rise delay-300">
-            <StatBlock
-              label="Asking price"
-              value={formatCurrency(business.asking_price, { compact: true })}
-            />
-            <StatBlock
-              label="Profit (EBITDA)"
-              value={showFinancials ? formatCurrency(profit, { compact: true }) : "Locked"}
-              sub={!showFinancials ? "Financial access required" : undefined}
-              locked={!showFinancials}
-            />
-            <StatBlock
-              label="Business type"
-              value={business.business_type || business.industry || "—"}
-            />
-            <StatBlock label="Tenure" value={business.tenure || "On enquiry"} />
-          </div>
-
-          {/* CTAs */}
-          <div className="mt-12 flex flex-wrap gap-3 animate-rise delay-500">
-            <a href="#ask" className="lumi-btn-primary">
-              <MessageSquare className="h-3.5 w-3.5" />
-              Ask a question
-            </a>
-            <a href="#documents" className="lumi-btn-ghost">
-              <FileSignature className="h-3.5 w-3.5" />
-              Request more information
-            </a>
-            <a href="#offer" className="lumi-btn-ghost">
-              <HandCoins className="h-3.5 w-3.5" />
-              Discuss an offer
-            </a>
-          </div>
+        {/* Scroll cue */}
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-6 font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground/70 flex flex-col items-center gap-2 animate-shimmer">
+          <span>Scroll</span>
+          <span className="block h-8 w-px bg-gradient-to-b from-primary/70 to-transparent" />
         </div>
       </div>
 
-      {/* Broker summary */}
+      {/* Floating data sash — overlaps hero & first section */}
+      <div className="relative -mt-24 md:-mt-28 z-10 mx-auto max-w-[1600px] px-6 md:px-12 animate-rise delay-500">
+        <div className="lumi-card-elevated grain p-8 md:p-12 grid grid-cols-2 md:grid-cols-4 gap-x-10 gap-y-10 backdrop-blur-xl">
+          <PullStat
+            label="Asking price"
+            value={formatCurrency(business.asking_price, { compact: true })}
+            size="lg"
+          />
+          <PullStat
+            label="Profit · EBITDA"
+            value={showFinancials ? formatCurrency(profit, { compact: true }) : "Locked"}
+            sub={!showFinancials ? "Financial access required" : "Annualised"}
+            locked={!showFinancials}
+            size="lg"
+          />
+          <PullStat
+            label="Format"
+            value={business.business_type || business.industry || "—"}
+            size="md"
+          />
+          <PullStat label="Tenure" value={business.tenure || "On enquiry"} size="md" />
+        </div>
+
+        <div className="mt-12 flex flex-wrap gap-3 animate-rise delay-700">
+          <a href="#ask" className="lumi-btn-primary group">
+            <MessageSquare className="h-3.5 w-3.5" />
+            Ask a question
+            <ArrowRight className="h-3 w-3 transition-transform duration-500 group-hover:translate-x-1" />
+          </a>
+          <a href="#documents" className="lumi-btn-ghost">
+            <FileSignature className="h-3.5 w-3.5" />
+            Request more information
+          </a>
+          <a href="#offer" className="lumi-btn-ghost">
+            <HandCoins className="h-3.5 w-3.5" />
+            Discuss an offer
+          </a>
+        </div>
+      </div>
+
+      {/* Editorial overture — broker introduction */}
       {business.summary && (
-        <div className="mt-16 max-w-3xl mx-auto text-center animate-rise delay-700">
-          <Quote className="h-5 w-5 text-primary/60 mx-auto mb-5" strokeWidth={1.25} />
-          <p className="font-display-italic text-xl md:text-2xl text-foreground/90 leading-[1.5] text-balance">
-            “{business.summary}”
-          </p>
-          <div className="mt-6 font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
-            Broker introduction · Lumi Private
+        <div className="relative mx-auto max-w-[1600px] px-6 md:px-12 pt-32 md:pt-44 pb-32 md:pb-40">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+            <div className="lg:col-span-4">
+              <Quote className="h-6 w-6 text-primary/70 mb-6" strokeWidth={1.25} />
+              <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-3">
+                Broker introduction
+              </div>
+              <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
+                Lumi Private · curated channel
+              </div>
+            </div>
+            <div className="lg:col-span-8">
+              <p className="font-display-italic text-2xl md:text-4xl lg:text-[2.75rem] text-foreground/95 leading-[1.25] text-balance">
+                “{business.summary}”
+              </p>
+            </div>
           </div>
         </div>
       )}
@@ -418,7 +507,9 @@ function HeroSection({
   );
 }
 
-/* ---------- Location ---------- */
+/* =====================================================================
+ * Location — immersive map canvas
+ * ================================================================== */
 
 function LocationSection({
   business,
@@ -428,71 +519,108 @@ function LocationSection({
   showExactLocation: boolean;
 }) {
   return (
-    <section id="location" className="scroll-mt-32">
-      <SectionEyebrow
-        icon={MapPin}
-        eyebrow="Location advantage"
-        title={
-          showExactLocation
-            ? "A site that does the trading for you."
-            : "Strategically positioned in a high-demand catchment."
-        }
-        intro={
-          showExactLocation
-            ? "Exact address available below. Surrounded by complementary demand drivers."
-            : "Specific location remains confidential. Detailed demand analysis is available once buyer access progresses."
-        }
-      />
-      <div className="mt-10 grid md:grid-cols-2 gap-6">
-        <div className="relative lumi-card-elevated overflow-hidden aspect-[4/3]">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-card to-background-deep" />
-          <div className="absolute inset-0 bg-spotlight opacity-60" />
-          {/* Map placeholder grid */}
-          <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="relative inline-flex">
-                <MapPin className="h-8 w-8 text-primary" strokeWidth={1.5} />
-                <span className="absolute inset-0 animate-ping rounded-full bg-primary/30" />
-              </div>
-              <div className="mt-4 font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
-                {showExactLocation ? "Exact pin" : "Approximate area"}
-              </div>
-            </div>
+    <section id="location" className="scroll-mt-32 relative border-t hairline bg-background-deep/40">
+      {/* Full-bleed canvas */}
+      <div className="relative h-[80svh] min-h-[560px] w-full overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-card to-background-deep" />
+        <div className="absolute inset-0 bg-spotlight opacity-50" />
+        <svg className="absolute inset-0 w-full h-full opacity-25" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="grid-lg" width="80" height="80" patternUnits="userSpaceOnUse">
+              <path d="M 80 0 L 0 0 0 80" fill="none" stroke="hsl(var(--primary))" strokeWidth="0.5" />
+            </pattern>
+            <radialGradient id="fade" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="black" stopOpacity="0" />
+              <stop offset="100%" stopColor="black" stopOpacity="1" />
+            </radialGradient>
+            <mask id="grid-mask">
+              <rect width="100%" height="100%" fill="white" />
+              <rect width="100%" height="100%" fill="url(#fade)" />
+            </mask>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid-lg)" mask="url(#grid-mask)" />
+        </svg>
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+
+        {/* Pin */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+          <div className="relative inline-flex">
+            <span className="absolute inset-0 -m-6 rounded-full border border-primary/30 animate-ping" />
+            <span className="absolute inset-0 -m-3 rounded-full border border-primary/50" />
+            <MapPin className="h-10 w-10 text-primary relative" strokeWidth={1.5} />
+          </div>
+          <div className="mt-6 font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary">
+            {showExactLocation ? "Exact pin" : "Approximate area"}
           </div>
         </div>
-        <div className="space-y-5">
-          <div className="lumi-card p-7">
-            <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-2">
-              Address
-            </div>
-            <div className="text-base">{locationDisplay(business, showExactLocation)}</div>
+
+        {/* Editorial overlay */}
+        <div className="absolute inset-x-0 bottom-0 mx-auto max-w-[1600px] px-6 md:px-12 pb-16 md:pb-24">
+          <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-5 flex items-center gap-3">
+            <span className="h-px w-8 bg-primary" />
+            <MapPin className="h-3 w-3" />
+            02 — Location advantage
           </div>
-          <div className="lumi-card p-7">
-            <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3">
+          <h2 className="font-display text-4xl md:text-6xl lg:text-7xl tracking-display leading-[1.0] text-balance max-w-4xl">
+            {showExactLocation
+              ? "A site that does the trading for you."
+              : "Strategically positioned in a high-demand catchment."}
+          </h2>
+        </div>
+      </div>
+
+      {/* Detail strip — editorial two-column */}
+      <div className="mx-auto max-w-[1600px] px-6 md:px-12 py-24 md:py-32">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+          <div className="lg:col-span-7">
+            <p className="text-lg md:text-xl text-foreground/85 leading-[1.7] max-w-2xl">
+              {showExactLocation
+                ? "Exact address available below. Surrounded by complementary demand drivers, this site benefits from sustained foot traffic and an enviable trading rhythm."
+                : "Specific location remains confidential. Detailed demand analysis is shared once buyer access progresses to the next stage."}
+            </p>
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
+              <div>
+                <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-2">
+                  Address
+                </div>
+                <div className="text-base md:text-lg text-foreground/90">
+                  {locationDisplay(business, showExactLocation)}
+                </div>
+              </div>
+              <div>
+                <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-2">
+                  Catchment
+                </div>
+                <div className="text-base md:text-lg text-foreground/90">
+                  {[business.suburb, business.city, business.region].filter(Boolean).join(" · ") ||
+                    "Released on access progression"}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="lg:col-span-5">
+            <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-6">
               Demand drivers
             </div>
-            <ul className="space-y-2 text-sm text-foreground/85">
+            <ul className="space-y-5">
               {[
                 "High-traffic commercial precinct",
                 "Strong residential catchment",
                 "Adjacent anchor tenants",
                 "Public transport access",
-              ].map((d) => (
-                <li key={d} className="flex items-center gap-3">
-                  <span className="size-1 rounded-full bg-primary" />
-                  {d}
+              ].map((d, i) => (
+                <li
+                  key={d}
+                  className="flex items-baseline gap-5 border-b hairline pb-5 last:border-b-0"
+                >
+                  <span className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary tabular-nums">
+                    0{i + 1}
+                  </span>
+                  <span className="text-base md:text-lg text-foreground/90">{d}</span>
                 </li>
               ))}
             </ul>
-            <div className="mt-5 pt-4 border-t hairline font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
+            <div className="mt-8 font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
               Detailed demand map staged for next release
             </div>
           </div>
@@ -502,17 +630,23 @@ function LocationSection({
   );
 }
 
-/* ---------- Highlights ---------- */
+/* =====================================================================
+ * Highlights — editorial list, no cards
+ * ================================================================== */
 
 function HighlightsSection({ business }: { business: BusinessDetail }) {
   const highlights = useMemo(() => {
     const items: { label: string; value: string }[] = [];
     if (business.weekly_sales_min || business.weekly_sales_max) {
-      const min = business.weekly_sales_min ? formatCurrency(business.weekly_sales_min, { compact: true }) : null;
-      const max = business.weekly_sales_max ? formatCurrency(business.weekly_sales_max, { compact: true }) : null;
+      const min = business.weekly_sales_min
+        ? formatCurrency(business.weekly_sales_min, { compact: true })
+        : null;
+      const max = business.weekly_sales_max
+        ? formatCurrency(business.weekly_sales_max, { compact: true })
+        : null;
       items.push({
         label: "Weekly sales",
-        value: min && max ? `${min} – ${max}` : (min ?? max ?? "—"),
+        value: min && max ? `${min} – ${max}` : min ?? max ?? "—",
       });
     }
     if (business.tenure) items.push({ label: "Tenure", value: business.tenure });
@@ -527,64 +661,96 @@ function HighlightsSection({ business }: { business: BusinessDetail }) {
   }, [business]);
 
   return (
-    <section id="highlights" className="scroll-mt-32">
-      <SectionEyebrow
-        icon={Sparkles}
-        eyebrow="Key highlights"
-        title="What makes this opportunity stand out."
-      />
-      <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <SectionFrame
+      id="highlights"
+      eyebrow="03 — Key highlights"
+      title="What makes this opportunity stand out."
+      icon={Sparkles}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-2">
         {highlights.map((h, i) => (
-          <div key={i} className="relative lumi-card p-7 group hover:border-primary/40 transition-colors">
-            <div className="absolute top-0 left-0 h-px w-12 bg-gradient-to-r from-primary to-transparent" />
-            <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3">
-              0{i + 1} · {h.label}
+          <div
+            key={i}
+            className="group grid grid-cols-[3rem_1fr] items-baseline gap-6 border-t hairline py-8 md:py-10 hover:border-primary/40 transition-colors"
+          >
+            <span className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary tabular-nums">
+              0{i + 1}
+            </span>
+            <div>
+              <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3">
+                {h.label}
+              </div>
+              <div className="font-display text-2xl md:text-3xl tracking-display leading-[1.15] text-balance">
+                {h.value}
+              </div>
             </div>
-            <div className="text-lg leading-[1.5] text-foreground/90">{h.value}</div>
           </div>
         ))}
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
-/* ---------- About ---------- */
+/* =====================================================================
+ * About — editorial spread
+ * ================================================================== */
 
 function AboutSection({ business }: { business: BusinessDetail }) {
+  const summary =
+    business.summary ||
+    business.headline ||
+    "A full editorial overview is being prepared by the Lumi team. The narrative below will cover the founding story, market positioning, customer profile and operating rhythm — written to give you a complete sense of how the business runs day-to-day.";
+
+  const facts = [
+    { label: "Industry", value: business.industry },
+    { label: "Type", value: business.business_type },
+    { label: "Tenure", value: business.tenure },
+    { label: "Trading hours", value: business.opening_hours },
+  ];
+
   return (
-    <section id="about" className="scroll-mt-32">
-      <SectionEyebrow icon={Building2} eyebrow="Business overview" title="The story behind the numbers." />
-      <div className="mt-10 grid md:grid-cols-3 gap-10">
-        <div className="md:col-span-2">
+    <SectionFrame
+      id="about"
+      eyebrow="04 — Business overview"
+      title="The story behind the numbers."
+      icon={Building2}
+      tone="deep"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-20">
+        <div className="lg:col-span-7">
+          <div className="font-display-italic text-2xl md:text-3xl text-foreground/90 leading-[1.4] mb-10 text-balance border-l-2 border-primary/60 pl-6">
+            {business.headline || "A confidential introduction to a business of substance."}
+          </div>
           <p className="text-base md:text-lg leading-[1.9] text-foreground/85 whitespace-pre-line">
-            {business.summary ||
-              business.headline ||
-              "A full editorial overview is being prepared by the Lumi team. The narrative below will cover the founding story, market positioning, customer profile and operating rhythm — written to give you a complete sense of how the business runs day-to-day."}
+            {summary}
           </p>
         </div>
-        <aside className="space-y-4">
-          <FactRow label="Industry" value={business.industry} />
-          <FactRow label="Type" value={business.business_type} />
-          <FactRow label="Tenure" value={business.tenure} />
-          <FactRow label="Trading hours" value={business.opening_hours} />
+        <aside className="lg:col-span-5 lg:pt-2">
+          <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-8">
+            At a glance
+          </div>
+          <div className="space-y-0">
+            {facts.map((f) => (
+              <div
+                key={f.label}
+                className="grid grid-cols-[1fr_2fr] gap-6 border-b hairline py-5"
+              >
+                <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
+                  {f.label}
+                </div>
+                <div className="text-base md:text-lg text-foreground/90">{f.value || "—"}</div>
+              </div>
+            ))}
+          </div>
         </aside>
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
-function FactRow({ label, value }: { label: string; value: string | null }) {
-  return (
-    <div className="border-b hairline pb-3">
-      <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-1">
-        {label}
-      </div>
-      <div className="text-sm">{value || "—"}</div>
-    </div>
-  );
-}
-
-/* ---------- Financials ---------- */
+/* =====================================================================
+ * Financials — oversized stat band
+ * ================================================================== */
 
 function FinancialsSection({
   business,
@@ -595,51 +761,92 @@ function FinancialsSection({
 }) {
   if (!showFinancials) {
     return (
-      <section id="financials" className="scroll-mt-32">
-        <SectionEyebrow icon={TrendingUp} eyebrow="Financial snapshot" title="Financials are released to qualified buyers." />
-        <div className="mt-10 relative lumi-card-elevated p-12 md:p-16 overflow-hidden">
-          <div className="absolute inset-0 bg-radiance opacity-40 pointer-events-none" />
-          <Lock className="h-6 w-6 text-primary mb-6" strokeWidth={1.25} />
-          <h3 className="font-display text-2xl md:text-3xl tracking-display mb-4 max-w-xl text-balance">
-            Revenue, profit and trading metrics are released once your access progresses to Financial.
-          </h3>
-          <p className="text-sm text-muted-foreground max-w-xl leading-[1.8]">
-            This typically follows a brief introduction call and confidentiality formalities. Reach out to your broker via the Ask panel below to begin.
-          </p>
-          <a href="#ask" className="mt-7 inline-flex lumi-btn-primary">
-            <MessageSquare className="h-3.5 w-3.5" />
-            Request access
-          </a>
+      <section
+        id="financials"
+        className="scroll-mt-32 relative border-t hairline overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-radiance opacity-50 pointer-events-none" />
+        <div className="absolute inset-0 bg-spotlight opacity-30 pointer-events-none" />
+        <div className="relative mx-auto max-w-[1600px] px-6 md:px-12 py-32 md:py-44">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-end">
+            <div className="lg:col-span-7">
+              <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-6 flex items-center gap-3">
+                <span className="h-px w-8 bg-primary" />
+                <Lock className="h-3 w-3" />
+                05 — Financial snapshot
+              </div>
+              <h2 className="font-display text-4xl md:text-6xl lg:text-7xl tracking-display leading-[1.0] text-balance">
+                Financials are released to qualified buyers.
+              </h2>
+              <p className="mt-8 text-lg md:text-xl text-foreground/80 leading-[1.7] max-w-2xl">
+                Revenue, profit and trading metrics are released once your access progresses to
+                Financial. This typically follows a brief introduction call and confidentiality
+                formalities.
+              </p>
+              <a href="#ask" className="mt-10 inline-flex lumi-btn-primary">
+                <MessageSquare className="h-3.5 w-3.5" />
+                Request access
+              </a>
+            </div>
+            <div className="lg:col-span-5 grid grid-cols-2 gap-x-8 gap-y-10">
+              <PullStat label="Revenue" value="——" locked size="lg" />
+              <PullStat label="EBITDA" value="——" locked size="lg" />
+              <PullStat label="Weekly sales" value="——" locked />
+              <PullStat label="Stock at value" value="——" locked />
+            </div>
+          </div>
         </div>
       </section>
     );
   }
 
   const profit = business.ebitda ?? business.normalised_profit;
+  const weekly =
+    business.weekly_sales_min || business.weekly_sales_max
+      ? `${formatCurrency(business.weekly_sales_min, { compact: true })} – ${formatCurrency(
+          business.weekly_sales_max,
+          { compact: true }
+        )}`
+      : "—";
+
   return (
-    <section id="financials" className="scroll-mt-32">
-      <SectionEyebrow icon={TrendingUp} eyebrow="Financial snapshot" title="Trading performance, normalised." />
-      <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
-        <StatBlock label="Revenue" value={formatCurrency(business.revenue, { compact: true })} sub="Annualised" />
-        <StatBlock label="Normalised profit" value={formatCurrency(profit, { compact: true })} sub="EBITDA basis" />
-        <StatBlock
-          label="Weekly sales"
-          value={
-            business.weekly_sales_min || business.weekly_sales_max
-              ? `${formatCurrency(business.weekly_sales_min, { compact: true })} – ${formatCurrency(business.weekly_sales_max, { compact: true })}`
-              : "—"
-          }
+    <SectionFrame
+      id="financials"
+      eyebrow="05 — Financial snapshot"
+      title="Trading performance, normalised."
+      intro="Detailed statements, GST returns and POS reports are available in the file room — released in line with your access level."
+      icon={TrendingUp}
+    >
+      {/* Hero stat — revenue full-bleed */}
+      <div className="border-t hairline pt-10 mb-12">
+        <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground mb-6">
+          Revenue · annualised
+        </div>
+        <div className="lumi-stat text-7xl md:text-[10rem] lg:text-[14rem] text-gradient-gold leading-[0.9]">
+          {formatCurrency(business.revenue, { compact: true })}
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-10">
+        <PullStat
+          label="Normalised profit"
+          value={formatCurrency(profit, { compact: true })}
+          sub="EBITDA basis"
+          size="lg"
         />
-        <StatBlock label="Stock at value" value={formatCurrency(business.stock_value, { compact: true })} />
+        <PullStat label="Weekly sales" value={weekly} size="lg" />
+        <PullStat
+          label="Stock at value"
+          value={formatCurrency(business.stock_value, { compact: true })}
+          size="lg"
+        />
       </div>
-      <div className="mt-6 lumi-card p-7 text-sm text-muted-foreground leading-[1.8]">
-        Detailed financial statements, GST returns and POS reports are available in the file room below, subject to your access level.
-      </div>
-    </section>
+    </SectionFrame>
   );
 }
 
-/* ---------- Lease ---------- */
+/* =====================================================================
+ * Lease
+ * ================================================================== */
 
 function LeaseSection({
   business,
@@ -649,15 +856,22 @@ function LeaseSection({
   showFinancials: boolean;
 }) {
   return (
-    <section id="lease" className="scroll-mt-32">
-      <SectionEyebrow icon={FileSignature} eyebrow="Lease summary" title="Security of tenure." />
-      <div className="mt-10 grid md:grid-cols-3 gap-5">
-        <StatBlock
+    <SectionFrame
+      id="lease"
+      eyebrow="06 — Lease summary"
+      title="Security of tenure."
+      intro="Full lease document available in the file room. Renewal terms, rent reviews and assignment provisions will be highlighted by your broker."
+      icon={FileSignature}
+      tone="deep"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-12">
+        <PullStat
           label="Annual rent"
           value={showFinancials ? formatCurrency(business.rent_per_year, { compact: true }) : "Locked"}
           locked={!showFinancials}
+          size="lg"
         />
-        <StatBlock
+        <PullStat
           label="Lease expiry"
           value={
             business.lease_expiry
@@ -667,168 +881,300 @@ function LeaseSection({
                 })
               : "—"
           }
+          size="lg"
         />
-        <StatBlock label="Renewal rights" value={business.renewal_rights || "On enquiry"} />
+        <PullStat
+          label="Renewal rights"
+          value={business.renewal_rights || "On enquiry"}
+          size="lg"
+        />
       </div>
-      <div className="mt-6 lumi-card p-7 text-sm text-muted-foreground leading-[1.8]">
-        Full lease document is available in the file room subject to access. Renewal terms, rent reviews and assignment provisions will be highlighted by your broker.
-      </div>
-    </section>
+    </SectionFrame>
   );
 }
 
-/* ---------- Operations ---------- */
+/* =====================================================================
+ * Operations — editorial paragraphs, no cards
+ * ================================================================== */
 
 function OperationsSection({ business }: { business: BusinessDetail }) {
+  const blocks = [
+    {
+      label: "Staff",
+      body:
+        business.staff_summary ||
+        "Staff structure and key roles will be detailed by the broker during the IM walkthrough.",
+    },
+    {
+      label: "Owner involvement",
+      body:
+        business.owner_involvement ||
+        "The owner's day-to-day role and transition plan will be discussed in the next stage.",
+    },
+    {
+      label: "Trading hours",
+      body:
+        business.opening_hours ||
+        "Standard trading hours apply. Full schedule released in the IM.",
+    },
+  ];
   return (
-    <section id="operations" className="scroll-mt-32">
-      <SectionEyebrow icon={Users} eyebrow="Operations & staff" title="How the business runs." />
-      <div className="mt-10 grid md:grid-cols-2 gap-5">
-        <div className="lumi-card p-8">
-          <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-primary mb-4">Staff</div>
-          <p className="text-base leading-[1.8] text-foreground/85">
-            {business.staff_summary || "Staff structure and key roles will be detailed by the broker during the IM walkthrough."}
-          </p>
-        </div>
-        <div className="lumi-card p-8">
-          <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-primary mb-4">Owner involvement</div>
-          <p className="text-base leading-[1.8] text-foreground/85">
-            {business.owner_involvement || "The owner's day-to-day role and transition plan will be discussed in the next stage."}
-          </p>
-        </div>
-        <div className="lumi-card p-8 md:col-span-2">
-          <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-primary mb-4">Trading hours</div>
-          <p className="text-base leading-[1.8] text-foreground/85">
-            {business.opening_hours || "Standard trading hours apply. Full schedule released in the IM."}
-          </p>
-        </div>
+    <SectionFrame
+      id="operations"
+      eyebrow="07 — Operations & staff"
+      title="How the business runs."
+      icon={Users}
+    >
+      <div className="space-y-0">
+        {blocks.map((b, i) => (
+          <div
+            key={b.label}
+            className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12 border-t hairline py-12 md:py-16"
+          >
+            <div className="md:col-span-3">
+              <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary tabular-nums mb-3">
+                0{i + 1}
+              </div>
+              <div className="font-display text-2xl md:text-3xl tracking-display">{b.label}</div>
+            </div>
+            <p className="md:col-span-8 md:col-start-5 text-lg md:text-xl text-foreground/85 leading-[1.7] max-w-3xl">
+              {b.body}
+            </p>
+          </div>
+        ))}
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
-/* ---------- Growth ---------- */
+/* =====================================================================
+ * Growth — large numbered editorial blocks
+ * ================================================================== */
 
 function GrowthSection() {
   const items = [
-    { title: "Operational uplift", body: "Tighten margins through supplier review, scheduling and inventory discipline." },
-    { title: "Marketing leverage", body: "Modernise the brand presence and capture the digital channel that is currently under-served." },
-    { title: "Capacity expansion", body: "Trade hours, additional services and footprint expansion remain on the table." },
+    {
+      title: "Operational uplift",
+      body:
+        "Tighten margins through supplier review, scheduling and inventory discipline. Documented systems make this an immediate, controllable win for an incoming operator.",
+    },
+    {
+      title: "Marketing leverage",
+      body:
+        "Modernise the brand presence and capture the digital channel that is currently under-served. Existing customer goodwill provides an unusually warm starting point.",
+    },
+    {
+      title: "Capacity expansion",
+      body:
+        "Trade hours, additional services and footprint expansion remain on the table. Demand consistently exceeds the current operating envelope.",
+    },
   ];
   return (
-    <section id="growth" className="scroll-mt-32">
-      <SectionEyebrow
-        icon={Rocket}
-        eyebrow="Growth opportunities"
-        title="Where the next chapter is written."
-        intro="Three directions an incoming owner can pursue from day one."
-      />
-      <div className="mt-10 grid md:grid-cols-3 gap-5">
+    <SectionFrame
+      id="growth"
+      eyebrow="08 — Growth opportunities"
+      title="Where the next chapter is written."
+      intro="Three directions an incoming owner can pursue from day one."
+      icon={Rocket}
+      tone="deep"
+    >
+      <div className="space-y-0">
         {items.map((it, i) => (
-          <div key={i} className="relative lumi-card p-8 group">
-            <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-primary mb-4">
-              0{i + 1}
+          <div
+            key={it.title}
+            className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12 border-t hairline py-14 md:py-20 group"
+          >
+            <div className="md:col-span-4">
+              <div className="lumi-stat text-6xl md:text-8xl text-gradient-gold leading-none">
+                0{i + 1}
+              </div>
             </div>
-            <h3 className="font-display text-xl tracking-display mb-3">{it.title}</h3>
-            <p className="text-sm text-muted-foreground leading-[1.8]">{it.body}</p>
+            <div className="md:col-span-7 md:col-start-6">
+              <h3 className="font-display text-3xl md:text-4xl tracking-display mb-5 text-balance">
+                {it.title}
+              </h3>
+              <p className="text-lg md:text-xl text-foreground/85 leading-[1.7] max-w-2xl">
+                {it.body}
+              </p>
+            </div>
           </div>
         ))}
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
-/* ---------- Buyer Fit ---------- */
+/* =====================================================================
+ * Buyer Fit — single immersive panel
+ * ================================================================== */
 
 function BuyerFitSection() {
   const fits = [
-    "Hands-on hospitality operator looking for a turnkey, established trading business",
-    "Investor seeking a managed asset with documented systems and proven revenue",
-    "Strategic acquirer with adjacent operations searching for accretive bolt-on",
+    "Hands-on hospitality operator looking for a turnkey, established trading business.",
+    "Investor seeking a managed asset with documented systems and proven revenue.",
+    "Strategic acquirer with adjacent operations searching for an accretive bolt-on.",
   ];
   return (
-    <section id="fit" className="scroll-mt-32">
-      <SectionEyebrow icon={Target} eyebrow="Buyer fit" title="Who this opportunity is built for." />
-      <div className="mt-10 lumi-card-elevated p-10 md:p-14">
-        <ul className="space-y-6">
-          {fits.map((f, i) => (
-            <li key={i} className="flex items-start gap-5">
-              <span className="mt-1 grid place-items-center size-7 rounded-full border border-primary/40 bg-primary/10 text-primary font-mono-brand text-[10px]">
-                {i + 1}
-              </span>
-              <p className="text-base md:text-lg text-foreground/90 leading-[1.6]">{f}</p>
-            </li>
-          ))}
-        </ul>
+    <SectionFrame
+      id="fit"
+      eyebrow="09 — Buyer fit"
+      title="Who this opportunity is built for."
+      icon={Target}
+    >
+      <div className="space-y-0">
+        {fits.map((f, i) => (
+          <div
+            key={i}
+            className="flex items-start gap-8 md:gap-12 border-t hairline py-10 md:py-14"
+          >
+            <span className="grid place-items-center size-12 md:size-14 rounded-full border border-primary/40 bg-primary/5 text-primary font-mono-brand text-[11px] tracking-eyebrow uppercase shrink-0">
+              0{i + 1}
+            </span>
+            <p className="font-display-italic text-xl md:text-3xl text-foreground/90 leading-[1.35] text-balance pt-2">
+              {f}
+            </p>
+          </div>
+        ))}
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
-/* ---------- Risks ---------- */
+/* =====================================================================
+ * Risks — editorial list
+ * ================================================================== */
 
 function RisksSection() {
   const risks = [
-    { title: "Lease covenant", body: "Confirm assignment provisions and any landlord conditions ahead of settlement." },
-    { title: "Key person dependency", body: "Plan handover of supplier and customer relationships during the transition window." },
-    { title: "Working capital", body: "Stock-at-value and trade creditors should be modelled into your day-one funding." },
+    {
+      title: "Lease covenant",
+      body: "Confirm assignment provisions and any landlord conditions ahead of settlement.",
+    },
+    {
+      title: "Key person dependency",
+      body:
+        "Plan handover of supplier and customer relationships during the transition window.",
+    },
+    {
+      title: "Working capital",
+      body: "Stock-at-value and trade creditors should be modelled into your day-one funding.",
+    },
   ];
   return (
-    <section id="risks" className="scroll-mt-32">
-      <SectionEyebrow
-        icon={ShieldAlert}
-        eyebrow="Due diligence"
-        title="Items to validate before proceeding."
-        intro="Lumi flags these so you can investigate them properly with your advisors."
-      />
-      <div className="mt-10 grid md:grid-cols-3 gap-5">
-        {risks.map((r) => (
-          <div key={r.title} className="lumi-card p-7 border-l-2 border-l-primary/50">
-            <h3 className="text-base font-medium mb-3">{r.title}</h3>
-            <p className="text-sm text-muted-foreground leading-[1.8]">{r.body}</p>
+    <SectionFrame
+      id="risks"
+      eyebrow="10 — Due diligence"
+      title="Items to validate before proceeding."
+      intro="Lumi flags these so you can investigate them properly with your advisors. Honest framing, surfaced early."
+      icon={ShieldAlert}
+      tone="deep"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-12">
+        {risks.map((r, i) => (
+          <div key={r.title} className="border-t-2 border-primary/40 pt-6">
+            <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-4 tabular-nums">
+              0{i + 1}
+            </div>
+            <h3 className="font-display text-2xl md:text-3xl tracking-display mb-4 text-balance">
+              {r.title}
+            </h3>
+            <p className="text-base md:text-lg text-foreground/80 leading-[1.7]">{r.body}</p>
           </div>
         ))}
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
-/* ---------- Gallery ---------- */
+/* =====================================================================
+ * Gallery — cinematic mosaic
+ * ================================================================== */
 
 function GallerySection({ business }: { business: BusinessDetail }) {
+  const tiles = Array.from({ length: 5 });
   return (
-    <section id="gallery" className="scroll-mt-32">
-      <SectionEyebrow icon={ImageIcon} eyebrow="Photo gallery" title="See the business." />
-      <div className="mt-10 grid grid-cols-2 md:grid-cols-3 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className={`relative lumi-card overflow-hidden ${
-              i === 0 ? "col-span-2 row-span-2 aspect-square md:aspect-[4/3]" : "aspect-square"
-            }`}
-          >
-            {i === 0 && business.hero_image_url ? (
-              <img src={business.hero_image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-            ) : (
-              <>
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-card to-background-deep" />
-                <div className="absolute inset-0 bg-spotlight opacity-30" />
-                <div className="absolute inset-0 grid place-items-center text-muted-foreground/40">
-                  <ImageIcon className="h-6 w-6" strokeWidth={1.25} />
-                </div>
-              </>
-            )}
+    <section
+      id="gallery"
+      className="scroll-mt-32 relative border-t hairline"
+    >
+      <div className="mx-auto max-w-[1600px] px-6 md:px-12 pt-32 md:pt-44 pb-12 md:pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+          <div className="lg:col-span-5">
+            <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-6 flex items-center gap-3">
+              <span className="h-px w-8 bg-primary" />
+              <ImageIcon className="h-3 w-3" />
+              11 — Photo gallery
+            </div>
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl tracking-display leading-[1.0] text-balance">
+              See the business.
+            </h2>
           </div>
-        ))}
+          <div className="lg:col-span-6 lg:col-start-7 lg:pt-4">
+            <p className="text-lg md:text-xl text-foreground/80 leading-[1.7] max-w-2xl">
+              A cinematic look at the space, the operation and the small details that make this
+              business what it is. Full gallery released alongside the IM.
+            </p>
+          </div>
+        </div>
       </div>
-      <p className="mt-6 font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
-        Full gallery released alongside the IM
-      </p>
+
+      {/* Hero plate */}
+      <div className="mx-auto max-w-[1600px] px-6 md:px-12">
+        <div className="relative w-full aspect-[21/9] overflow-hidden border hairline-strong rounded-sm grain">
+          {business.hero_image_url ? (
+            <img
+              src={business.hero_image_url}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-card to-background-deep" />
+              <div className="absolute inset-0 grid place-items-center text-muted-foreground/40">
+                <ImageIcon className="h-8 w-8" strokeWidth={1.25} />
+              </div>
+            </>
+          )}
+          <div className="absolute inset-0 bg-vignette pointer-events-none" />
+          <span className="absolute top-4 left-4 size-3 border-t border-l border-primary/70" />
+          <span className="absolute top-4 right-4 size-3 border-t border-r border-primary/70" />
+          <span className="absolute bottom-4 left-4 size-3 border-b border-l border-primary/70" />
+          <span className="absolute bottom-4 right-4 size-3 border-b border-r border-primary/70" />
+        </div>
+      </div>
+
+      {/* Mosaic grid */}
+      <div className="mx-auto max-w-[1600px] px-6 md:px-12 mt-4 md:mt-6 pb-32 md:pb-44">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {tiles.map((_, i) => (
+            <div
+              key={i}
+              className={`relative overflow-hidden border hairline rounded-sm ${
+                i === 0 ? "col-span-2 md:col-span-2 aspect-[2/1]" : "aspect-[4/5]"
+              }`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-card to-background-deep" />
+              <div className="absolute inset-0 bg-spotlight opacity-30" />
+              <div className="absolute inset-0 grid place-items-center text-muted-foreground/40">
+                <ImageIcon className="h-6 w-6" strokeWidth={1.25} />
+              </div>
+              <div className="absolute bottom-3 left-3 font-mono-brand text-[8px] tracking-eyebrow uppercase text-muted-foreground/60 tabular-nums">
+                Plate · {String(i + 2).padStart(2, "0")}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
+          Full gallery released alongside the IM
+        </div>
+      </div>
     </section>
   );
 }
 
-/* ---------- Ask ---------- */
+/* =====================================================================
+ * Ask
+ * ================================================================== */
 
 function AskSection({ businessId }: { businessId: string }) {
   const { user } = useAuth();
@@ -858,23 +1204,24 @@ function AskSection({ businessId }: { businessId: string }) {
   };
 
   return (
-    <section id="ask" className="scroll-mt-32">
-      <SectionEyebrow
-        icon={MessageSquare}
-        eyebrow="Ask about this business"
-        title="Speak directly with the assigned broker."
-        intro="Questions are reviewed personally and answered in confidence."
-      />
-      <div className="mt-10 lumi-card-elevated p-8 md:p-10">
+    <SectionFrame
+      id="ask"
+      eyebrow="13 — Ask about this business"
+      title="Speak directly with the assigned broker."
+      intro="Questions are reviewed personally and answered in confidence."
+      icon={MessageSquare}
+    >
+      <div className="border-t hairline pt-10 max-w-3xl">
         {submitted ? (
-          <div className="text-center py-6">
-            <Check className="h-6 w-6 text-primary mx-auto mb-4" />
-            <h3 className="font-display text-2xl mb-2">Your question is with the broker.</h3>
-            <p className="text-sm text-muted-foreground">You will receive a response by email within one business day.</p>
-            <button
-              onClick={() => setSubmitted(false)}
-              className="mt-6 lumi-btn-ghost"
-            >
+          <div className="py-10">
+            <Check className="h-6 w-6 text-primary mb-5" />
+            <h3 className="font-display text-3xl md:text-4xl tracking-display mb-3">
+              Your question is with the broker.
+            </h3>
+            <p className="text-base md:text-lg text-muted-foreground leading-[1.7] max-w-xl">
+              You will receive a response by email within one business day.
+            </p>
+            <button onClick={() => setSubmitted(false)} className="mt-8 lumi-btn-ghost">
               Ask another
             </button>
           </div>
@@ -883,11 +1230,11 @@ function AskSection({ businessId }: { businessId: string }) {
             <textarea
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              rows={5}
+              rows={6}
               placeholder="What would you like to know? Lease terms, growth, owner transition, supplier mix…"
-              className="lumi-input resize-none"
+              className="lumi-input resize-none text-base md:text-lg leading-[1.6]"
             />
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
               <p className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
                 Confidential · sent to broker only
               </p>
@@ -896,18 +1243,24 @@ function AskSection({ businessId }: { businessId: string }) {
                 disabled={submitting || !question.trim()}
                 className="lumi-btn-primary disabled:opacity-50"
               >
-                {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                {submitting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Send className="h-3.5 w-3.5" />
+                )}
                 Send question
               </button>
             </div>
           </>
         )}
       </div>
-    </section>
+    </SectionFrame>
   );
 }
 
-/* ---------- Offer ---------- */
+/* =====================================================================
+ * Offer
+ * ================================================================== */
 
 function OfferSection({ businessId }: { businessId: string }) {
   const { user } = useAuth();
@@ -943,74 +1296,96 @@ function OfferSection({ businessId }: { businessId: string }) {
   };
 
   return (
-    <section id="offer" className="scroll-mt-32">
-      <SectionEyebrow
-        icon={HandCoins}
-        eyebrow="Start offer discussion"
-        title="Indicate your interest, on your terms."
-        intro="This is not a binding offer — it opens a confidential conversation with the broker."
-      />
-      <div className="mt-10 lumi-card-elevated p-8 md:p-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-radiance opacity-40 pointer-events-none" />
-        <div className="relative">
+    <section
+      id="offer"
+      className="scroll-mt-32 relative border-t hairline overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-radiance opacity-50 pointer-events-none" />
+      <div className="absolute inset-0 bg-spotlight opacity-30 pointer-events-none" />
+      <div className="relative mx-auto max-w-[1600px] px-6 md:px-12 py-32 md:py-44">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 mb-16">
+          <div className="lg:col-span-6">
+            <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-6 flex items-center gap-3">
+              <span className="h-px w-8 bg-primary" />
+              <HandCoins className="h-3 w-3" />
+              14 — Start offer discussion
+            </div>
+            <h2 className="font-display text-4xl md:text-6xl lg:text-7xl tracking-display leading-[1.0] text-balance">
+              Indicate your interest, on your terms.
+            </h2>
+          </div>
+          <div className="lg:col-span-5 lg:col-start-8 lg:pt-4">
+            <p className="text-lg md:text-xl text-foreground/80 leading-[1.7] max-w-xl">
+              This is not a binding offer — it opens a confidential conversation with the broker
+              and signals you are ready to discuss real next steps.
+            </p>
+          </div>
+        </div>
+
+        <div className="lumi-card-elevated grain p-8 md:p-14 max-w-5xl">
           {submitted ? (
-            <div className="text-center py-8">
-              <Check className="h-7 w-7 text-primary mx-auto mb-5" />
-              <h3 className="font-display text-3xl mb-3">Discussion opened.</h3>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto leading-[1.8]">
-                The broker has been notified and will reach out shortly to discuss next steps and prepare appropriate documentation.
+            <div className="py-8">
+              <Check className="h-7 w-7 text-primary mb-5" />
+              <h3 className="font-display text-3xl md:text-4xl tracking-display mb-4">
+                Discussion opened.
+              </h3>
+              <p className="text-base md:text-lg text-muted-foreground max-w-xl leading-[1.7]">
+                The broker has been notified and will reach out shortly to discuss next steps and
+                prepare appropriate documentation.
               </p>
             </div>
           ) : (
             <>
-              <div className="grid md:grid-cols-2 gap-5">
+              <div className="grid md:grid-cols-2 gap-6 md:gap-10">
                 <div>
-                  <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-2 block">
+                  <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 block">
                     Indicative amount (NZD)
                   </label>
                   <input
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="e.g. 850,000"
-                    className="lumi-input"
+                    className="lumi-input text-base md:text-lg"
                   />
                 </div>
                 <div>
-                  <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-2 block">
+                  <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 block">
                     Settlement preference
                   </label>
                   <input
                     value={terms.split("\n")[0] || ""}
                     onChange={(e) => setTerms(e.target.value)}
                     placeholder="e.g. 60 days, subject to DD"
-                    className="lumi-input"
+                    className="lumi-input text-base md:text-lg"
                   />
                 </div>
               </div>
-              <div className="mt-5">
-                <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-2 block">
+              <div className="mt-6">
+                <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 block">
                   Notes for the broker
                 </label>
                 <textarea
                   value={terms}
                   onChange={(e) => setTerms(e.target.value)}
-                  rows={4}
+                  rows={5}
                   placeholder="Conditions, finance status, structure preference…"
-                  className="lumi-input resize-none"
+                  className="lumi-input resize-none text-base md:text-lg leading-[1.6]"
                 />
               </div>
-              <label className="mt-6 flex items-start gap-3 cursor-pointer">
+              <label className="mt-8 flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={accepted}
                   onChange={(e) => setAccepted(e.target.checked)}
                   className="mt-1 size-4 accent-primary"
                 />
-                <span className="text-xs text-muted-foreground leading-[1.7]">
-                  This is not a binding agreement. My offer details will be sent to the broker, who will contact me to discuss next steps and prepare the correct documentation if appropriate.
+                <span className="text-xs md:text-sm text-muted-foreground leading-[1.7]">
+                  This is not a binding agreement. My offer details will be sent to the broker, who
+                  will contact me to discuss next steps and prepare the correct documentation if
+                  appropriate.
                 </span>
               </label>
-              <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
+              <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
                 <p className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
                   Strictly confidential · broker only
                 </p>
@@ -1019,7 +1394,11 @@ function OfferSection({ businessId }: { businessId: string }) {
                   disabled={!accepted || submitting}
                   className="lumi-btn-primary disabled:opacity-50"
                 >
-                  {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <HandCoins className="h-3.5 w-3.5" />}
+                  {submitting ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <HandCoins className="h-3.5 w-3.5" />
+                  )}
                   Submit offer discussion
                 </button>
               </div>
@@ -1031,7 +1410,36 @@ function OfferSection({ businessId }: { businessId: string }) {
   );
 }
 
-/* ---------- Helpers ---------- */
+/* =====================================================================
+ * Footer — quiet sign-off
+ * ================================================================== */
+
+function Footer({ business }: { business: BusinessDetail }) {
+  return (
+    <footer className="relative border-t hairline">
+      <div className="mx-auto max-w-[1600px] px-6 md:px-12 py-20 md:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-end">
+          <div className="md:col-span-7">
+            <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-4">
+              Lumi Private · End of presentation
+            </div>
+            <div className="font-display text-3xl md:text-4xl tracking-display text-balance">
+              Discretion is the product.
+            </div>
+          </div>
+          <div className="md:col-span-5 md:text-right font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground space-y-2">
+            <div>File no. {business.id.slice(0, 6).toUpperCase()}</div>
+            <div>Confidential · for the named recipient only</div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* =====================================================================
+ * Helpers
+ * ================================================================== */
 
 function locationDisplay(b: BusinessDetail, exact: boolean) {
   if (exact) {
