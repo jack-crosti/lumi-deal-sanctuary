@@ -22,6 +22,7 @@ import BusinessDocuments from "@/components/admin/BusinessDocuments";
 import BusinessOfferInterest from "@/components/admin/BusinessOfferInterest";
 import ActivityFeed from "@/components/admin/ActivityFeed";
 import PresentationStudio from "@/components/admin/PresentationStudio";
+import BusinessFinancials from "@/components/admin/BusinessFinancials";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -201,7 +202,7 @@ export default function AdminBusinessDetail() {
             <BusinessDocuments businessId={b.id} />
           </TabsContent>
           <TabsContent value="financials" className="mt-0">
-            <Financials b={b} />
+            <BusinessFinancials businessId={b.id} />
           </TabsContent>
           <TabsContent value="location" className="mt-0">
             <Location b={b} />
