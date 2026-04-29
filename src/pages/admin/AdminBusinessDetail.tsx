@@ -20,6 +20,7 @@ import { formatCurrency, formatDate, formatRelative } from "@/lib/format";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import BusinessDocuments from "@/components/admin/BusinessDocuments";
 import BusinessOfferInterest from "@/components/admin/BusinessOfferInterest";
+import ActivityFeed from "@/components/admin/ActivityFeed";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -214,10 +215,7 @@ export default function AdminBusinessDetail() {
             />
           </TabsContent>
           <TabsContent value="activity" className="mt-0">
-            <PlaceholderPanel
-              title="Buyer Activity"
-              body="A timeline of every buyer touchpoint — logins, page views, document opens — with intent scoring."
-            />
+            <ActivityFeed businessId={b.id} showFilters />
           </TabsContent>
           <TabsContent value="questions" className="mt-0">
             <PlaceholderPanel

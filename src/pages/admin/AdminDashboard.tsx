@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, Plus, Users, Activity, Building2, MessageSquare } from "lucide-react";
 import { PageHeader } from "@/components/AppShell";
 import { useAuth } from "@/hooks/useAuth";
+import HotBuyers from "@/components/admin/HotBuyers";
+import ActivityFeed from "@/components/admin/ActivityFeed";
 
 const stats = [
   { k: "Active Information Memorandums", v: "0", hint: "Published listings" },
@@ -109,6 +111,28 @@ export default function AdminDashboard() {
             </Link>
           </div>
         </div>
+      </section>
+
+      {/* Hot buyers */}
+      <section className="animate-rise mt-16">
+        <div className="flex items-baseline justify-between mb-8">
+          <h2 className="font-display text-2xl md:text-3xl tracking-display">Hot buyers</h2>
+          <Link to="/admin/buyers" className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground hover:text-primary transition-colors lumi-link">
+            View all buyers
+          </Link>
+        </div>
+        <HotBuyers />
+      </section>
+
+      {/* Recent activity */}
+      <section className="animate-rise mt-16">
+        <div className="flex items-baseline justify-between mb-8">
+          <h2 className="font-display text-2xl md:text-3xl tracking-display">Recent activity</h2>
+          <Link to="/admin/activity" className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground hover:text-primary transition-colors lumi-link">
+            View full feed
+          </Link>
+        </div>
+        <ActivityFeed limit={12} />
       </section>
     </>
   );
