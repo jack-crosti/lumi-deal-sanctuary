@@ -17,63 +17,114 @@ export type Database = {
       businesses: {
         Row: {
           address: string | null
+          archived_at: string | null
           asking_price: number | null
+          broker_notes: string | null
+          business_type: string | null
+          city: string | null
+          confidential_title: string | null
           created_at: string
           created_by: string | null
           ebitda: number | null
           headline: string | null
           hero_image_url: string | null
           id: string
+          industry: string | null
+          lease_expiry: string | null
           location_mode: Database["public"]["Enums"]["location_mode"]
           name: string
+          normalised_profit: number | null
+          opening_hours: string | null
+          owner_involvement: string | null
+          public_title: string | null
           region: string | null
+          renewal_rights: string | null
+          rent_per_year: number | null
           revenue: number | null
           slug: string | null
+          staff_summary: string | null
           status: Database["public"]["Enums"]["business_status"]
+          stock_value: number | null
           suburb: string | null
           summary: string | null
           tenure: string | null
           updated_at: string
+          weekly_sales_max: number | null
+          weekly_sales_min: number | null
         }
         Insert: {
           address?: string | null
+          archived_at?: string | null
           asking_price?: number | null
+          broker_notes?: string | null
+          business_type?: string | null
+          city?: string | null
+          confidential_title?: string | null
           created_at?: string
           created_by?: string | null
           ebitda?: number | null
           headline?: string | null
           hero_image_url?: string | null
           id?: string
+          industry?: string | null
+          lease_expiry?: string | null
           location_mode?: Database["public"]["Enums"]["location_mode"]
           name: string
+          normalised_profit?: number | null
+          opening_hours?: string | null
+          owner_involvement?: string | null
+          public_title?: string | null
           region?: string | null
+          renewal_rights?: string | null
+          rent_per_year?: number | null
           revenue?: number | null
           slug?: string | null
+          staff_summary?: string | null
           status?: Database["public"]["Enums"]["business_status"]
+          stock_value?: number | null
           suburb?: string | null
           summary?: string | null
           tenure?: string | null
           updated_at?: string
+          weekly_sales_max?: number | null
+          weekly_sales_min?: number | null
         }
         Update: {
           address?: string | null
+          archived_at?: string | null
           asking_price?: number | null
+          broker_notes?: string | null
+          business_type?: string | null
+          city?: string | null
+          confidential_title?: string | null
           created_at?: string
           created_by?: string | null
           ebitda?: number | null
           headline?: string | null
           hero_image_url?: string | null
           id?: string
+          industry?: string | null
+          lease_expiry?: string | null
           location_mode?: Database["public"]["Enums"]["location_mode"]
           name?: string
+          normalised_profit?: number | null
+          opening_hours?: string | null
+          owner_involvement?: string | null
+          public_title?: string | null
           region?: string | null
+          renewal_rights?: string | null
+          rent_per_year?: number | null
           revenue?: number | null
           slug?: string | null
+          staff_summary?: string | null
           status?: Database["public"]["Enums"]["business_status"]
+          stock_value?: number | null
           suburb?: string | null
           summary?: string | null
           tenure?: string | null
           updated_at?: string
+          weekly_sales_max?: number | null
+          weekly_sales_min?: number | null
         }
         Relationships: []
       }
@@ -571,7 +622,12 @@ export type Database = {
         | "offer_submitted"
         | "return_visit"
       app_role: "admin" | "buyer"
-      business_status: "draft" | "published" | "archived"
+      business_status:
+        | "draft"
+        | "internal_review"
+        | "ready_to_publish"
+        | "published"
+        | "archived"
       document_type:
         | "im"
         | "financials"
@@ -762,7 +818,13 @@ export const Constants = {
         "return_visit",
       ],
       app_role: ["admin", "buyer"],
-      business_status: ["draft", "published", "archived"],
+      business_status: [
+        "draft",
+        "internal_review",
+        "ready_to_publish",
+        "published",
+        "archived",
+      ],
       document_type: [
         "im",
         "financials",
