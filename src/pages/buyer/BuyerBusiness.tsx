@@ -231,7 +231,7 @@ export default function BuyerBusiness() {
       </SectionFrame>
 
       <AskSection businessId={business.id} />
-      <OfferSection businessId={business.id} />
+      <OfferSection businessId={business.id} businessName={business.public_title || business.name} />
 
       <Footer business={business} />
     </div>
