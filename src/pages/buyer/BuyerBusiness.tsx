@@ -3,6 +3,7 @@ import { Link, useParams, Navigate } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { PageHeader, PlaceholderPanel } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
+import BuyerDocuments from "@/components/buyer/BuyerDocuments";
 
 export default function BuyerBusiness() {
   const { businessId } = useParams<{ businessId: string }>();
@@ -60,10 +61,13 @@ export default function BuyerBusiness() {
           </Link>
         }
       />
-      <PlaceholderPanel
-        title="Cinematic presentation coming next"
-        body="Hero, location advantage, key highlights, financial snapshot, lease summary, supporting documents and offer discussion — staged for the next build."
-      />
+      <div className="space-y-12">
+        <PlaceholderPanel
+          title="Cinematic presentation coming next"
+          body="Hero, location advantage, key highlights, financial snapshot, lease summary and offer discussion — staged for the next build."
+        />
+        {businessId && <BuyerDocuments businessId={businessId} />}
+      </div>
     </>
   );
 }
