@@ -1,4 +1,6 @@
-import { PageHeader, PlaceholderPanel } from "@/components/AppShell";
+import { PageHeader } from "@/components/AppShell";
+import ActivityFeed from "@/components/admin/ActivityFeed";
+import HotBuyers from "@/components/admin/HotBuyers";
 
 export default function AdminActivity() {
   return (
@@ -8,10 +10,23 @@ export default function AdminActivity() {
         title="Activity"
         description="Every login, view, document open and download — across every buyer and every Information Memorandum."
       />
-      <PlaceholderPanel
-        title="Activity stream coming next"
-        body="Filterable feed of buyer events, with intent scoring to highlight your most serious prospects."
-      />
+
+      <section className="mb-16 animate-rise">
+        <div className="flex items-baseline justify-between mb-8">
+          <h2 className="font-display text-2xl md:text-3xl tracking-display">Hot buyers</h2>
+          <span className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
+            Ranked by intent
+          </span>
+        </div>
+        <HotBuyers />
+      </section>
+
+      <section className="animate-rise">
+        <div className="flex items-baseline justify-between mb-8">
+          <h2 className="font-display text-2xl md:text-3xl tracking-display">Event feed</h2>
+        </div>
+        <ActivityFeed limit={500} showFilters />
+      </section>
     </>
   );
 }
