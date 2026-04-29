@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Send, Sparkles, Wand2, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Loader2,
+  Send,
+  Sparkles,
+  Wand2,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  AlertTriangle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { blockLabel } from "@/lib/presentationBlocks";
@@ -11,6 +20,16 @@ interface Props {
   blocks: BlockRow[];
   selectedBlockId: string | null;
   onSelectBlock: (id: string | null) => void;
+  onBlockUpdated?: (block: BlockRow) => void;
+}
+
+interface Proposal {
+  title?: string | null;
+  subtitle?: string | null;
+  body?: string | null;
+  key_points?: string[] | null;
+  summary_of_changes: string;
+  warnings: string[];
 }
 
 interface RequestRow {
@@ -24,6 +43,9 @@ interface RequestRow {
   result_preview: string | null;
   approval_status: "unreviewed" | "approved" | "rejected";
   created_at: string;
+  proposal: Proposal | null;
+  warnings: string[];
+  error_message: string | null;
 }
 
 const QUICK_PROMPTS = [
@@ -39,19 +61,19 @@ const QUICK_PROMPTS = [
   "Make this suitable for an experienced hospitality operator",
 ];
 
-const PLACEHOLDER_RESPONSE = "AI editing will be connected in the next stage.";
-
 export default function AIChatEditor({
   businessId,
   versionId,
   blocks,
   selectedBlockId,
   onSelectBlock,
+  onBlockUpdated,
 }: Props) {
   const [history, setHistory] = useState<RequestRow[]>([]);
   const [instruction, setInstruction] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const load = async () => {
@@ -64,7 +86,7 @@ export default function AIChatEditor({
     if (error) {
       toast.error(error.message);
     } else {
-      setHistory((data ?? []) as RequestRow[]);
+      setHistory((data ?? []) as unknown as RequestRow[]);
     }
     setLoading(false);
   };
@@ -75,8 +97,38 @@ export default function AIChatEditor({
   }, [businessId]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [history.length]);
+
+  const upsertRow = (row: RequestRow) => {
+    setHistory((prev) => {
+      const exists = prev.some((r) => r.id === row.id);
+      return exists ? prev.map((r) => (r.id === row.id ? row : r)) : [...prev, row];
+    });
+  };
+
+  const callAI = async (requestId: string) => {
+    setBusyId(requestId);
+    const { data, error } = await supabase.functions.invoke("ai-edit-block", {
+      body: { request_id: requestId },
+    });
+    setBusyId(null);
+    if (error) {
+      const msg =
+        (data as { error?: string } | null)?.error ?? error.message ?? "AI request failed";
+      toast.error(msg);
+    }
+    // Reload the row regardless — function persists status + proposal
+    const { data: row } = await supabase
+      .from("ai_edit_requests")
+      .select("*")
+      .eq("id", requestId)
+      .single();
+    if (row) upsertRow(row as unknown as RequestRow);
+  };
 
   const submit = async (text?: string) => {
     const value = (text ?? instruction).trim();
@@ -98,7 +150,6 @@ export default function AIChatEditor({
         admin_id: adminId,
         instruction: value,
         status: "pending",
-        result_preview: PLACEHOLDER_RESPONSE,
       })
       .select("*")
       .single();
@@ -107,34 +158,105 @@ export default function AIChatEditor({
       toast.error(error?.message ?? "Could not save instruction");
       return;
     }
-    setHistory((prev) => [...prev, data as RequestRow]);
+    const row = data as unknown as RequestRow;
+    upsertRow(row);
     setInstruction("");
+    void callAI(row.id);
   };
 
-  const updateApproval = async (
-    id: string,
-    approval: "approved" | "rejected",
-  ) => {
-    const { error } = await supabase
+  const retry = async (r: RequestRow) => {
+    // Reuse same instruction + target — create a fresh request
+    setSubmitting(true);
+    const { data: auth } = await supabase.auth.getUser();
+    const adminId = auth.user?.id;
+    if (!adminId) {
+      setSubmitting(false);
+      return;
+    }
+    const { data } = await supabase
       .from("ai_edit_requests")
-      .update({
-        approval_status: approval,
-        status: approval === "approved" ? "applied" : "rejected",
+      .insert({
+        business_id: businessId,
+        version_id: versionId,
+        target_block_id: r.target_block_id,
+        admin_id: adminId,
+        instruction: r.instruction,
+        status: "pending",
       })
-      .eq("id", id);
-    if (error) return toast.error(error.message);
-    setHistory((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? {
-              ...r,
-              approval_status: approval,
-              status: approval === "approved" ? "applied" : "rejected",
-            }
-          : r,
-      ),
-    );
-    toast.success(approval === "approved" ? "Marked applied" : "Rejected");
+      .select("*")
+      .single();
+    setSubmitting(false);
+    if (data) {
+      const row = data as unknown as RequestRow;
+      upsertRow(row);
+      void callAI(row.id);
+    }
+  };
+
+  const applyProposal = async (r: RequestRow) => {
+    if (!r.target_block_id || !r.proposal) {
+      toast.error("Nothing to apply");
+      return;
+    }
+    setBusyId(r.id);
+    const block = blocks.find((b) => b.id === r.target_block_id);
+    if (!block) {
+      setBusyId(null);
+      toast.error("Block no longer exists");
+      return;
+    }
+    const p = r.proposal;
+    const patch: Record<string, unknown> = {
+      review_status: "needs_review",
+    };
+    if (p.title !== null && p.title !== undefined) patch.title = p.title;
+    if (p.subtitle !== null && p.subtitle !== undefined) patch.subtitle = p.subtitle;
+    if (p.body !== null && p.body !== undefined) patch.body = p.body;
+    if (Array.isArray(p.key_points)) patch.key_points = p.key_points;
+
+    const { error } = await supabase
+      .from("presentation_sections")
+      .update(patch)
+      .eq("id", block.id);
+    if (error) {
+      setBusyId(null);
+      toast.error(error.message);
+      return;
+    }
+
+    // Save snapshot of working version
+    await supabase.rpc("save_presentation_snapshot" as never, {
+      _version_id: versionId,
+      _change_summary: `AI edit applied to ${blockLabel(block.section_type)}: ${r.instruction.slice(0, 120)}`,
+    } as never);
+
+    // Mark request applied
+    const { data: updated } = await supabase
+      .from("ai_edit_requests")
+      .update({ status: "applied", approval_status: "approved" })
+      .eq("id", r.id)
+      .select("*")
+      .single();
+    if (updated) upsertRow(updated as unknown as RequestRow);
+
+    onBlockUpdated?.({
+      ...block,
+      ...(patch as Partial<BlockRow>),
+      review_status: "needs_review",
+    } as BlockRow);
+
+    setBusyId(null);
+    toast.success("Applied. Block marked Needs Review.");
+  };
+
+  const reject = async (r: RequestRow) => {
+    const { data } = await supabase
+      .from("ai_edit_requests")
+      .update({ status: "rejected", approval_status: "rejected" })
+      .eq("id", r.id)
+      .select("*")
+      .single();
+    if (data) upsertRow(data as unknown as RequestRow);
   };
 
   const targetLabel = (id: string | null) => {
@@ -151,7 +273,8 @@ export default function AIChatEditor({
           <h3 className="font-display text-base tracking-display">AI Editor</h3>
         </div>
         <p className="text-[11px] text-muted-foreground mt-1.5 leading-[1.6]">
-          Type an instruction. Drafts are saved for review — nothing is published automatically.
+          The AI uses only the existing block, business data and broker notes. It never
+          publishes — every change needs your approval.
         </p>
         <div className="mt-3">
           <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground block mb-1.5">
@@ -209,37 +332,70 @@ export default function AIChatEditor({
                   </p>
                 </div>
               </div>
-              {/* AI placeholder reply */}
+
+              {/* AI reply */}
               <div className="flex justify-start">
-                <div className="max-w-[90%] px-3.5 py-2.5 rounded-sm border hairline bg-card/40">
-                  <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="max-w-[92%] w-full px-3.5 py-2.5 rounded-sm border hairline bg-card/40">
+                  <div className="flex items-center gap-1.5 mb-2">
                     <Wand2 className="h-3 w-3 text-primary" strokeWidth={1.5} />
                     <span className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
-                      {r.status}
+                      {r.status === "processing" || busyId === r.id
+                        ? "Thinking…"
+                        : r.status}
                     </span>
                   </div>
-                  <p className="text-[12.5px] leading-[1.55] text-muted-foreground italic">
-                    {r.result_preview ?? PLACEHOLDER_RESPONSE}
-                  </p>
-                  {r.approval_status === "unreviewed" && (
-                    <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t hairline">
+
+                  {r.status === "processing" || busyId === r.id ? (
+                    <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Drafting a revision…
+                    </div>
+                  ) : r.status === "failed" ? (
+                    <p className="text-[12.5px] leading-[1.55] text-destructive">
+                      {r.error_message ?? r.result_preview ?? "AI request failed."}
+                    </p>
+                  ) : r.proposal ? (
+                    <ProposalCard proposal={r.proposal} />
+                  ) : (
+                    <p className="text-[12.5px] leading-[1.55] text-muted-foreground">
+                      {r.result_preview ?? "No preview available."}
+                    </p>
+                  )}
+
+                  {/* Actions */}
+                  {r.proposal && r.status !== "applied" && r.status !== "rejected" && (
+                    <div className="flex flex-wrap items-center gap-2 mt-3 pt-2.5 border-t hairline">
                       <button
-                        onClick={() => updateApproval(r.id, "approved")}
-                        className="inline-flex items-center gap-1 text-[10px] tracking-eyebrow uppercase font-mono-brand px-2.5 py-1 rounded-sm border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
+                        onClick={() => applyProposal(r)}
+                        disabled={busyId === r.id || !r.target_block_id}
+                        className="inline-flex items-center gap-1 text-[10px] tracking-eyebrow uppercase font-mono-brand px-2.5 py-1 rounded-sm border border-primary/40 text-primary hover:bg-primary/10 transition-colors disabled:opacity-40"
+                        title={
+                          r.target_block_id
+                            ? "Apply to block as draft"
+                            : "Select a target block to apply"
+                        }
                       >
-                        <CheckCircle2 className="h-3 w-3" /> Mark applied
+                        <CheckCircle2 className="h-3 w-3" /> Apply
                       </button>
                       <button
-                        onClick={() => updateApproval(r.id, "rejected")}
+                        onClick={() => reject(r)}
+                        disabled={busyId === r.id}
                         className="inline-flex items-center gap-1 text-[10px] tracking-eyebrow uppercase font-mono-brand px-2.5 py-1 rounded-sm border hairline text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <XCircle className="h-3 w-3" /> Reject
                       </button>
+                      <button
+                        onClick={() => retry(r)}
+                        disabled={busyId === r.id}
+                        className="inline-flex items-center gap-1 text-[10px] tracking-eyebrow uppercase font-mono-brand px-2.5 py-1 rounded-sm border hairline text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <RefreshCw className="h-3 w-3" /> Try again
+                      </button>
                     </div>
                   )}
-                  {r.approval_status !== "unreviewed" && (
+
+                  {(r.status === "applied" || r.status === "rejected") && (
                     <p className="font-mono-brand text-[9px] tracking-eyebrow uppercase mt-2 text-muted-foreground">
-                      {r.approval_status}
+                      {r.status === "applied" ? "Applied as draft" : "Rejected"}
                     </p>
                   )}
                 </div>
@@ -278,6 +434,70 @@ export default function AIChatEditor({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ProposalCard({ proposal }: { proposal: Proposal }) {
+  return (
+    <div className="space-y-2.5">
+      <p className="text-[12.5px] leading-[1.55] text-foreground">
+        {proposal.summary_of_changes}
+      </p>
+
+      {proposal.title && (
+        <Field label="Title">
+          <p className="text-[12.5px] text-foreground">{proposal.title}</p>
+        </Field>
+      )}
+      {proposal.subtitle && (
+        <Field label="Subtitle">
+          <p className="text-[12.5px] text-foreground">{proposal.subtitle}</p>
+        </Field>
+      )}
+      {proposal.body && (
+        <Field label="Body">
+          <p className="text-[12.5px] text-foreground whitespace-pre-wrap leading-[1.6]">
+            {proposal.body}
+          </p>
+        </Field>
+      )}
+      {Array.isArray(proposal.key_points) && proposal.key_points.length > 0 && (
+        <Field label="Key points">
+          <ul className="text-[12.5px] text-foreground space-y-0.5 list-disc list-inside">
+            {proposal.key_points.map((k, i) => (
+              <li key={i}>{k}</li>
+            ))}
+          </ul>
+        </Field>
+      )}
+
+      {proposal.warnings?.length > 0 && (
+        <div className="mt-2 px-2.5 py-2 rounded-sm border border-amber-500/30 bg-amber-500/5 text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1.5 mb-1">
+            <AlertTriangle className="h-3 w-3" />
+            <span className="font-mono-brand text-[9px] tracking-eyebrow uppercase">
+              Verify before applying
+            </span>
+          </div>
+          <ul className="text-[11.5px] leading-[1.5] space-y-0.5 list-disc list-inside">
+            {proposal.warnings.map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-0.5">
+        {label}
+      </p>
+      {children}
     </div>
   );
 }
