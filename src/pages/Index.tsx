@@ -39,7 +39,7 @@ const Index = () => {
             <a href="#assurance" className="hover:text-foreground transition-colors">Assurance</a>
           </nav>
           <Link
-            to={session ? (role === "admin" ? "/admin" : "/portal") : "/auth"}
+            to={session ? (role === "admin" ? "/admin/dashboard" : "/buyer/dashboard") : "/login"}
             className="group inline-flex items-center gap-2 rounded-sm border border-primary/40 bg-primary/10 px-4 py-2 text-[11px] tracking-eyebrow uppercase text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
           >
             {session ? "Enter deal room" : "Buyer sign in"}
@@ -84,18 +84,18 @@ const Index = () => {
 
             <div className="mt-12 flex flex-wrap items-center gap-4">
               <Link
-                to="/auth"
+                to="/login"
                 className="inline-flex items-center gap-3 rounded-sm bg-primary px-6 py-4 text-[11px] tracking-eyebrow uppercase text-primary-foreground hover:bg-primary/90 transition-colors shadow-cinema"
               >
                 Enter the deal room
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-              <a
-                href="#mandate"
+              <Link
+                to="/invite"
                 className="inline-flex items-center gap-3 rounded-sm border hairline px-6 py-4 text-[11px] tracking-eyebrow uppercase text-foreground hover:border-primary/60 transition-colors"
               >
                 Request access
-              </a>
+              </Link>
             </div>
           </div>
 

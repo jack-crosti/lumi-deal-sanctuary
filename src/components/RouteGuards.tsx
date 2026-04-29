@@ -23,10 +23,9 @@ export function RequireAuth({
   const location = useLocation();
 
   if (loading) return <FullScreenLoader />;
-  if (!session) return <Navigate to="/auth" state={{ from: location }} replace />;
+  if (!session) return <Navigate to="/login" state={{ from: location }} replace />;
   if (role && userRole !== role) {
-    // Send to their own area instead of bouncing to /auth
-    return <Navigate to={userRole === "admin" ? "/admin" : "/portal"} replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
   return <>{children}</>;
 }
@@ -34,6 +33,6 @@ export function RequireAuth({
 export function RedirectIfAuthed({ children }: { children: ReactNode }) {
   const { session, role, loading } = useAuth();
   if (loading) return <FullScreenLoader />;
-  if (session) return <Navigate to={role === "admin" ? "/admin" : "/portal"} replace />;
+  if (session) return <Navigate to={role === "admin" ? "/admin/dashboard" : "/buyer/dashboard"} replace />;
   return <>{children}</>;
 }
