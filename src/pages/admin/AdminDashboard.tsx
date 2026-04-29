@@ -1,18 +1,10 @@
-import { AppShell, PageHeader, PlaceholderPanel, type NavItem } from "@/components/AppShell";
+import { PageHeader, PlaceholderPanel } from "@/components/AppShell";
 import { useAuth } from "@/hooks/useAuth";
-
-const nav: NavItem[] = [
-  { to: "/admin", label: "Overview", end: true },
-  { to: "/admin/businesses", label: "Businesses" },
-  { to: "/admin/buyers", label: "Buyers" },
-  { to: "/admin/activity", label: "Activity" },
-  { to: "/admin/requests", label: "Requests" },
-];
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   return (
-    <AppShell area="Admin" nav={nav}>
+    <>
       <PageHeader
         eyebrow="Broker console"
         title={`Welcome, ${user?.email?.split("@")[0] ?? "broker"}.`}
@@ -38,6 +30,6 @@ export default function AdminDashboard() {
         title="Business manager arrives next"
         body="Create your first listing, configure confidentiality (Blind, Suburb, Exact), and assign approved buyers — coming in the next stage."
       />
-    </AppShell>
+    </>
   );
 }

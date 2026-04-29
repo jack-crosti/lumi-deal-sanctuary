@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, Outlet } from "react-router-dom";
 import type { ReactNode } from "react";
 import { LogOut } from "lucide-react";
 import { Wordmark } from "@/components/brand/Wordmark";
@@ -14,7 +14,7 @@ export interface NavItem {
 interface AppShellProps {
   area: "Admin" | "Buyer";
   nav: NavItem[];
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 export function AppShell({ area, nav, children }: AppShellProps) {
@@ -93,7 +93,9 @@ export function AppShell({ area, nav, children }: AppShellProps) {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 md:px-10 py-10 md:py-14">{children}</main>
+      <main className="mx-auto max-w-7xl px-6 md:px-10 py-10 md:py-14">
+        {children ?? <Outlet />}
+      </main>
     </div>
   );
 }
