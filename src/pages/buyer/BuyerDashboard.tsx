@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ACCESS_LEVEL_OPTIONS, type AccessLevel } from "@/lib/buyerLabels";
 import { formatCurrency } from "@/lib/format";
+import { logActivity } from "@/lib/activity";
 
 interface AssignedBusiness {
   id: string;
@@ -35,6 +36,7 @@ export default function BuyerDashboard() {
   useEffect(() => {
     if (!user) return;
     let active = true;
+    void logActivity({ buyerId: user.id, event: "dashboard_view" });
     (async () => {
       // Pull access rows joined with the assigned business. RLS ensures we only get our own.
       const { data, error } = await supabase

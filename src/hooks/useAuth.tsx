@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { getRoleForEmail, type AppRole } from "@/lib/authRoles";
+import { logActivity } from "@/lib/activity";
 
 export type { AppRole };
 
@@ -21,9 +22,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const role = getRoleForEmail(session?.user?.email);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
       setLoading(false);
+      if (event === "SIGNED_IN" && newSession?.user) {
+        // Defer so RLS sees the new auth context
+        setTimeout(() => {
+          void logActivity({ buyerId: newSession.user.id, event: "login" });
+        }, 0);
+      }
     });
 
     supabase.auth.getSession().then(({ data }) => {
