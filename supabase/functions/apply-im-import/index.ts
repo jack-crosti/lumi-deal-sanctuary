@@ -15,7 +15,7 @@ const ALLOWED_SECTIONS = new Set([
   "operations_staff",
   "growth_opportunities",
   "buyer_fit",
-  "risks_dd",
+  "risks_due_diligence",
   "supporting_documents",
   "start_offer_discussion",
 ]);
