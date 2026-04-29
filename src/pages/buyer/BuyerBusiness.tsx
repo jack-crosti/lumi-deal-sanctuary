@@ -36,6 +36,7 @@ import {
   type ContactMethod,
   type RequestPriority,
 } from "@/lib/requestLabels";
+import { logActivity, makeOnceTracker, type ActivityEvent } from "@/lib/activity";
 
 type LocationMode = "blind" | "suburb" | "exact";
 
@@ -130,25 +131,70 @@ export default function BuyerBusiness() {
     };
   }, [businessId, user]);
 
-  // Track page view once
+  // Track business view + return visit once per page lifetime
   useEffect(() => {
     if (!business || !user || trackedView.current) return;
     trackedView.current = true;
-    void supabase.from("buyer_activity").insert({
-      buyer_id: user.id,
-      business_id: business.id,
-      event_type: "business_view",
-      metadata: {},
-    });
+    (async () => {
+      // Detect prior visits to this business by this buyer (return visit signal)
+      const { count } = await supabase
+        .from("buyer_activity")
+        .select("id", { count: "exact", head: true })
+        .eq("buyer_id", user.id)
+        .eq("business_id", business.id)
+        .eq("event_type", "business_view");
+
+      void logActivity({
+        buyerId: user.id,
+        businessId: business.id,
+        event: "business_view",
+      });
+
+      if ((count ?? 0) >= 1) {
+        void logActivity({
+          buyerId: user.id,
+          businessId: business.id,
+          event: "return_visit",
+          metadata: { previous_views: count },
+        });
+      }
+    })();
   }, [business, user]);
 
-  // Section observer for active nav highlight
+  // Section observer — drives nav highlight + per-section activity logging
   useEffect(() => {
-    if (!business) return;
+    if (!business || !user) return;
+    const onceFor = makeOnceTracker();
+    const sectionToEvent: Record<string, ActivityEvent | null> = {
+      hero: "hero_view",
+      location: "location_view",
+      about: "im_view",
+      financials: "financial_view",
+      lease: "lease_view",
+      documents: "documents_section_view",
+      // Other sections are tracked for nav state only
+      highlights: null,
+      operations: null,
+      growth: null,
+      buyer_fit: null,
+      risks: null,
+      gallery: null,
+      ask: null,
+      offer: null,
+    };
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
-          if (e.isIntersecting) setActiveSection(e.target.id);
+          if (!e.isIntersecting) return;
+          setActiveSection(e.target.id);
+          const event = sectionToEvent[e.target.id];
+          if (event && onceFor(`section:${e.target.id}`)) {
+            void logActivity({
+              buyerId: user.id,
+              businessId: business.id,
+              event,
+            });
+          }
         });
       },
       { rootMargin: "-40% 0px -55% 0px", threshold: 0 }
@@ -158,7 +204,7 @@ export default function BuyerBusiness() {
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
-  }, [business]);
+  }, [business, user]);
 
   if (loading) {
     return (
