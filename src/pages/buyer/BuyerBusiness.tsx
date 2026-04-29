@@ -1955,3 +1955,76 @@ function locationDisplay(b: BusinessDetail, exact: boolean) {
   }
   return b.region || "Location confidential";
 }
+/* =====================================================================
+ * Page-level chrome: progress bar + premium loading state
+ * ================================================================== */
+
+function PageProgress() {
+  const progress = useScrollProgress();
+  return (
+    <div
+      className="fixed top-0 left-0 right-0 z-[60] h-[2px] bg-transparent pointer-events-none"
+      aria-hidden
+    >
+      <div
+        className="h-full bg-gradient-to-r from-primary/30 via-primary to-primary/30 origin-left"
+        style={{
+          transform: `scaleX(${progress})`,
+          transition: "transform 120ms linear",
+        }}
+      />
+    </div>
+  );
+}
+
+function BuyerBusinessLoading() {
+  const reduced = usePrefersReducedMotion();
+  return (
+    <div className="-mx-6 md:-mx-12 -my-14 md:-my-20 min-h-[100svh] bg-background flex items-center justify-center">
+      <div className="text-center px-6">
+        {/* Halo ring */}
+        <div className="relative mx-auto h-16 w-16 mb-8">
+          <div
+            className={`absolute inset-0 rounded-full border border-primary/30 ${
+              reduced ? "" : "animate-pulse-glow"
+            }`}
+          />
+          <div className="absolute inset-2 rounded-full border border-primary/20" />
+          <Loader2
+            className={`absolute inset-0 m-auto h-5 w-5 text-primary ${
+              reduced ? "" : "animate-spin"
+            }`}
+            strokeWidth={1.5}
+          />
+        </div>
+        <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground">
+          Lumi Private
+        </div>
+        <div className="mt-3 font-display text-2xl md:text-3xl tracking-display text-foreground">
+          Verifying your access
+        </div>
+        <p className="mt-3 text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
+          Confirming credentials and preparing this confidential presentation.
+        </p>
+        {/* Shimmering skeleton bars */}
+        <div className="mt-10 max-w-xs mx-auto space-y-2.5">
+          <div className="h-1 rounded-full bg-card/50 overflow-hidden">
+            <div
+              className={`h-full w-1/3 bg-gradient-to-r from-transparent via-primary/70 to-transparent ${
+                reduced ? "" : "animate-shimmer"
+              }`}
+            />
+          </div>
+          <div className="h-1 rounded-full bg-card/50 overflow-hidden">
+            <div
+              className={`h-full w-1/2 bg-gradient-to-r from-transparent via-primary/50 to-transparent ${
+                reduced ? "" : "animate-shimmer"
+              }`}
+              style={{ animationDelay: "200ms" }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
