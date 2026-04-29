@@ -137,14 +137,6 @@ export default function AdminBusinessDetail() {
       <PageHeader
         eyebrow={b.business_type || "Mandate"}
         title={title}
-        description={
-          <span className="inline-flex items-center gap-3">
-            <BusinessStatusPill status={b.status} />
-            <span className="text-[11px] text-muted-foreground">
-              Updated {formatRelative(b.updated_at)}
-            </span>
-          </span>
-        as unknown as string}
         actions={
           <div className="flex items-center gap-2">
             <Link to="/admin/businesses" className="lumi-btn-ghost">
@@ -169,6 +161,13 @@ export default function AdminBusinessDetail() {
           </div>
         }
       />
+
+      <div className="-mt-10 mb-12 flex items-center gap-3 animate-rise">
+        <BusinessStatusPill status={b.status} />
+        <span className="text-[11px] text-muted-foreground">
+          Updated {formatRelative(b.updated_at)}
+        </span>
+      </div>
 
       <Tabs
         value={tab}
