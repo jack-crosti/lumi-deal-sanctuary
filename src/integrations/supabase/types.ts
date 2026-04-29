@@ -264,6 +264,11 @@ export type Database = {
           created_at: string
           id: string
           message: string | null
+          preferred_call_time: string | null
+          preferred_contact:
+            | Database["public"]["Enums"]["contact_method"]
+            | null
+          priority: Database["public"]["Enums"]["request_priority"]
           request_type: Database["public"]["Enums"]["request_type"]
           resolved_at: string | null
           resolved_by: string | null
@@ -276,6 +281,11 @@ export type Database = {
           created_at?: string
           id?: string
           message?: string | null
+          preferred_call_time?: string | null
+          preferred_contact?:
+            | Database["public"]["Enums"]["contact_method"]
+            | null
+          priority?: Database["public"]["Enums"]["request_priority"]
           request_type?: Database["public"]["Enums"]["request_type"]
           resolved_at?: string | null
           resolved_by?: string | null
@@ -288,6 +298,11 @@ export type Database = {
           created_at?: string
           id?: string
           message?: string | null
+          preferred_call_time?: string | null
+          preferred_contact?:
+            | Database["public"]["Enums"]["contact_method"]
+            | null
+          priority?: Database["public"]["Enums"]["request_priority"]
           request_type?: Database["public"]["Enums"]["request_type"]
           resolved_at?: string | null
           resolved_by?: string | null
@@ -697,6 +712,7 @@ export type Database = {
         | "family_office"
         | "other"
       ca_status: "not_sent" | "sent" | "signed" | "approved"
+      contact_method: "email" | "phone" | "either"
       document_availability: "hidden" | "available" | "requires_approval"
       document_type:
         | "im"
@@ -733,8 +749,24 @@ export type Database = {
       owner_intent: "working_owner" | "investor" | "either"
       presentation_status: "draft" | "published" | "archived"
       question_status: "open" | "answered" | "closed"
-      request_status: "open" | "in_progress" | "closed"
-      request_type: "information" | "document_access" | "call" | "other"
+      request_priority: "normal" | "high"
+      request_status:
+        | "open"
+        | "in_progress"
+        | "closed"
+        | "waiting_vendor"
+        | "replied"
+      request_type:
+        | "information"
+        | "document_access"
+        | "call"
+        | "other"
+        | "financial"
+        | "lease"
+        | "pos"
+        | "chattels"
+        | "vendor_meeting"
+        | "dd_question"
       section_type:
         | "hero"
         | "location_advantage"
@@ -919,6 +951,7 @@ export const Constants = {
         "other",
       ],
       ca_status: ["not_sent", "sent", "signed", "approved"],
+      contact_method: ["email", "phone", "either"],
       document_availability: ["hidden", "available", "requires_approval"],
       document_type: [
         "im",
@@ -959,8 +992,26 @@ export const Constants = {
       owner_intent: ["working_owner", "investor", "either"],
       presentation_status: ["draft", "published", "archived"],
       question_status: ["open", "answered", "closed"],
-      request_status: ["open", "in_progress", "closed"],
-      request_type: ["information", "document_access", "call", "other"],
+      request_priority: ["normal", "high"],
+      request_status: [
+        "open",
+        "in_progress",
+        "closed",
+        "waiting_vendor",
+        "replied",
+      ],
+      request_type: [
+        "information",
+        "document_access",
+        "call",
+        "other",
+        "financial",
+        "lease",
+        "pos",
+        "chattels",
+        "vendor_meeting",
+        "dd_question",
+      ],
       section_type: [
         "hero",
         "location_advantage",
