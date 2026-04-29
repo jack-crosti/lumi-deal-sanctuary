@@ -467,6 +467,63 @@ export type Database = {
           },
         ]
       }
+      im_imports: {
+        Row: {
+          admin_id: string
+          admin_notes: string | null
+          business_id: string
+          created_at: string
+          draft_version_id: string | null
+          error_message: string | null
+          extracted_facts: Json | null
+          extracted_text: string | null
+          file_name: string | null
+          file_size: number | null
+          generated_blocks: Json | null
+          id: string
+          status: Database["public"]["Enums"]["im_import_status"]
+          storage_path: string
+          updated_at: string
+          warnings: string[]
+        }
+        Insert: {
+          admin_id: string
+          admin_notes?: string | null
+          business_id: string
+          created_at?: string
+          draft_version_id?: string | null
+          error_message?: string | null
+          extracted_facts?: Json | null
+          extracted_text?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          generated_blocks?: Json | null
+          id?: string
+          status?: Database["public"]["Enums"]["im_import_status"]
+          storage_path: string
+          updated_at?: string
+          warnings?: string[]
+        }
+        Update: {
+          admin_id?: string
+          admin_notes?: string | null
+          business_id?: string
+          created_at?: string
+          draft_version_id?: string | null
+          error_message?: string | null
+          extracted_facts?: Json | null
+          extracted_text?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          generated_blocks?: Json | null
+          id?: string
+          status?: Database["public"]["Enums"]["im_import_status"]
+          storage_path?: string
+          updated_at?: string
+          warnings?: string[]
+        }
+        Relationships: []
+      }
       offer_interest: {
         Row: {
           accountant_email: string | null
@@ -925,6 +982,14 @@ export type Database = {
         | "pre_approved"
         | "needs_finance"
         | "not_disclosed"
+      im_import_status:
+        | "uploading"
+        | "extracting"
+        | "generating"
+        | "ready_for_review"
+        | "applied"
+        | "rejected"
+        | "failed"
       location_mode: "blind" | "suburb" | "exact"
       offer_status:
         | "draft"
@@ -1189,6 +1254,15 @@ export const Constants = {
         "pre_approved",
         "needs_finance",
         "not_disclosed",
+      ],
+      im_import_status: [
+        "uploading",
+        "extracting",
+        "generating",
+        "ready_for_review",
+        "applied",
+        "rejected",
+        "failed",
       ],
       location_mode: ["blind", "suburb", "exact"],
       offer_status: [
