@@ -28,13 +28,20 @@ export function AppShell({ area, nav, children }: AppShellProps) {
   };
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b hairline bg-background/85 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-6 md:px-10 h-16 flex items-center justify-between gap-8">
-          <div className="flex items-center gap-6">
-            <Link to="/"><Wordmark className="text-base" /></Link>
-            <span className="hidden md:inline-block h-4 w-px bg-hairline" />
-            <span className="hidden md:inline-flex font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground">
+    <div className="relative min-h-dvh bg-background text-foreground">
+      {/* ambient washes */}
+      <div className="fixed inset-0 bg-radiance pointer-events-none opacity-60" />
+      <div className="fixed inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent pointer-events-none" />
+
+      <header className="sticky top-0 z-30 border-b hairline bg-background/75 backdrop-blur-xl">
+        <div className="mx-auto max-w-[1400px] px-6 md:px-12 h-20 flex items-center justify-between gap-8">
+          <div className="flex items-center gap-8">
+            <Link to="/" className="transition-opacity hover:opacity-80">
+              <Wordmark className="text-base" />
+            </Link>
+            <span className="hidden md:inline-block h-5 w-px bg-hairline" />
+            <span className="hidden md:inline-flex items-center gap-2 font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
+              <span className="size-1 rounded-full bg-primary animate-shimmer" />
               {area} Console
             </span>
           </div>
@@ -46,27 +53,34 @@ export function AppShell({ area, nav, children }: AppShellProps) {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded-sm text-[11px] tracking-eyebrow uppercase transition-colors ${
+                  `relative px-4 py-2.5 rounded-md text-[10px] tracking-eyebrow uppercase transition-all duration-300 ${
                     isActive
-                      ? "text-primary bg-primary/10"
+                      ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   }`
                 }
               >
-                {item.label}
+                {({ isActive }) => (
+                  <>
+                    {item.label}
+                    {isActive && (
+                      <span className="absolute inset-x-3 -bottom-px h-px bg-primary" />
+                    )}
+                  </>
+                )}
               </NavLink>
             ))}
           </nav>
 
           <div className="flex items-center gap-4">
-            <span className="hidden sm:inline font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground truncate max-w-[180px]">
+            <span className="hidden sm:inline font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground truncate max-w-[200px]">
               {user?.email}
             </span>
             <button
               onClick={handleSignOut}
-              className="inline-flex items-center gap-2 rounded-sm border hairline px-3 py-2 text-[11px] tracking-eyebrow uppercase text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+              className="group inline-flex items-center gap-2 rounded-md border hairline px-3.5 py-2 text-[10px] tracking-eyebrow uppercase text-muted-foreground hover:text-primary hover:border-primary/40 transition-all duration-300"
             >
-              <LogOut className="h-3.5 w-3.5" />
+              <LogOut className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
               <span className="hidden sm:inline">Sign out</span>
             </button>
           </div>
@@ -80,7 +94,7 @@ export function AppShell({ area, nav, children }: AppShellProps) {
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `px-3 py-1.5 rounded-sm text-[10px] tracking-eyebrow uppercase whitespace-nowrap ${
+                `px-3 py-1.5 rounded-md text-[9px] tracking-eyebrow uppercase whitespace-nowrap transition-colors ${
                   isActive
                     ? "text-primary bg-primary/10"
                     : "text-muted-foreground"
@@ -93,7 +107,7 @@ export function AppShell({ area, nav, children }: AppShellProps) {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 md:px-10 py-10 md:py-14">
+      <main className="relative mx-auto max-w-[1400px] px-6 md:px-12 py-14 md:py-20 animate-fade-cinema">
         {children ?? <Outlet />}
       </main>
     </div>
@@ -112,31 +126,50 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-8 border-b hairline">
-      <div>
+    <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-8 pb-10 border-b hairline animate-rise">
+      <div className="max-w-2xl">
         {eyebrow && (
-          <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-3">
+          <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-5 flex items-center gap-3">
+            <span className="h-px w-8 bg-primary" />
             {eyebrow}
           </div>
         )}
-        <h1 className="font-display text-3xl md:text-4xl tracking-tight">{title}</h1>
+        <h1 className="font-display text-4xl md:text-5xl lg:text-6xl tracking-display leading-[1.0] text-balance">
+          {title}
+        </h1>
         {description && (
-          <p className="mt-3 text-sm text-muted-foreground max-w-xl leading-relaxed">{description}</p>
+          <p className="mt-6 text-base text-muted-foreground max-w-xl leading-[1.8]">
+            {description}
+          </p>
         )}
       </div>
-      {actions && <div className="flex items-center gap-3">{actions}</div>}
+      {actions && <div className="flex items-center gap-3 shrink-0">{actions}</div>}
     </div>
   );
 }
 
 export function PlaceholderPanel({ title, body }: { title: string; body: string }) {
   return (
-    <div className="border hairline rounded-sm bg-card p-10 text-center">
-      <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground mb-3">
-        Coming next
+    <div className="relative lumi-card-elevated p-12 md:p-20 text-center overflow-hidden animate-rise delay-200">
+      <div className="absolute inset-0 bg-radiance opacity-50 pointer-events-none" />
+      {/* corner ticks */}
+      <span className="absolute top-4 left-4 size-3 border-t border-l border-primary/40" />
+      <span className="absolute top-4 right-4 size-3 border-t border-r border-primary/40" />
+      <span className="absolute bottom-4 left-4 size-3 border-b border-l border-primary/40" />
+      <span className="absolute bottom-4 right-4 size-3 border-b border-r border-primary/40" />
+
+      <div className="relative">
+        <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-5 inline-flex items-center gap-3">
+          <span className="size-1 rounded-full bg-primary animate-shimmer" />
+          Coming next
+        </div>
+        <h3 className="font-display text-3xl md:text-4xl tracking-display mb-4 text-balance">
+          {title}
+        </h3>
+        <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto leading-[1.8]">
+          {body}
+        </p>
       </div>
-      <h3 className="font-display text-xl mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">{body}</p>
     </div>
   );
 }
