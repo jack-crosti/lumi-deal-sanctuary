@@ -14,10 +14,11 @@ export interface NavItem {
 interface AppShellProps {
   area: "Admin" | "Buyer";
   nav: NavItem[];
+  roleAccent?: "admin" | "buyer";
   children?: ReactNode;
 }
 
-export function AppShell({ area, nav, children }: AppShellProps) {
+export function AppShell({ area, nav, roleAccent = "admin", children }: AppShellProps) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -27,22 +28,47 @@ export function AppShell({ area, nav, children }: AppShellProps) {
     navigate("/", { replace: true });
   };
 
+  const isAdmin = roleAccent === "admin";
+  const homePath = isAdmin ? "/admin/dashboard" : "/buyer/dashboard";
+  const initial = (user?.email?.[0] ?? "·").toUpperCase();
+  const roleLabel = isAdmin ? "Admin" : "Buyer";
+  const roleEyebrow = isAdmin ? "Broker console" : "Private buyer channel";
+
   return (
     <div className="relative min-h-dvh bg-background text-foreground">
       {/* ambient washes */}
       <div className="fixed inset-0 bg-radiance pointer-events-none opacity-60" />
-      <div className="fixed inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent pointer-events-none" />
+      {/* role accent bar — gold for admin, neutral for buyer */}
+      <div
+        className={`fixed inset-x-0 top-0 h-[2px] pointer-events-none ${
+          isAdmin
+            ? "bg-gradient-to-r from-transparent via-primary/70 to-transparent"
+            : "bg-gradient-to-r from-transparent via-foreground/20 to-transparent"
+        }`}
+      />
 
       <header className="sticky top-0 z-30 border-b hairline bg-background/75 backdrop-blur-xl">
         <div className="mx-auto max-w-[1400px] px-6 md:px-12 h-20 flex items-center justify-between gap-8">
           <div className="flex items-center gap-8">
-            <Link to="/" className="transition-opacity hover:opacity-80">
+            <Link to={homePath} className="transition-opacity hover:opacity-80">
               <Wordmark className="text-base" />
             </Link>
             <span className="hidden md:inline-block h-5 w-px bg-hairline" />
-            <span className="hidden md:inline-flex items-center gap-2 font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
-              <span className="size-1 rounded-full bg-primary animate-shimmer" />
-              {area} Console
+            {/* prominent role pill */}
+            <span
+              className={`hidden md:inline-flex items-center gap-2 rounded-full px-3 py-1 font-mono-brand text-[9px] tracking-eyebrow uppercase border ${
+                isAdmin
+                  ? "border-primary/50 bg-primary/10 text-primary"
+                  : "border-hairline bg-foreground/[0.04] text-foreground/70"
+              }`}
+              aria-label={`Signed in as ${roleLabel}`}
+            >
+              <span
+                className={`size-1.5 rounded-full ${
+                  isAdmin ? "bg-primary animate-shimmer" : "bg-foreground/50"
+                }`}
+              />
+              {roleLabel} · {roleEyebrow}
             </span>
           </div>
 
@@ -72,10 +98,23 @@ export function AppShell({ area, nav, children }: AppShellProps) {
             ))}
           </nav>
 
-          <div className="flex items-center gap-4">
-            <span className="hidden sm:inline font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground truncate max-w-[200px]">
-              {user?.email}
-            </span>
+          <div className="flex items-center gap-3">
+            {/* avatar + email */}
+            <div className="hidden sm:flex items-center gap-2.5 pl-2">
+              <span
+                className={`grid place-items-center size-7 rounded-full font-mono-brand text-[10px] tracking-tight border ${
+                  isAdmin
+                    ? "border-primary/40 bg-primary/15 text-primary"
+                    : "border-hairline bg-foreground/[0.06] text-foreground/80"
+                }`}
+                aria-hidden
+              >
+                {initial}
+              </span>
+              <span className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground truncate max-w-[180px]">
+                {user?.email}
+              </span>
+            </div>
             <button
               onClick={handleSignOut}
               className="group inline-flex items-center gap-2 rounded-md border hairline px-3.5 py-2 text-[10px] tracking-eyebrow uppercase text-muted-foreground hover:text-primary hover:border-primary/40 transition-all duration-300"
@@ -84,6 +123,27 @@ export function AppShell({ area, nav, children }: AppShellProps) {
               <span className="hidden sm:inline">Sign out</span>
             </button>
           </div>
+        </div>
+
+        {/* Mobile role pill */}
+        <div className="md:hidden flex items-center gap-2 px-4 pb-2">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono-brand text-[9px] tracking-eyebrow uppercase border ${
+              isAdmin
+                ? "border-primary/50 bg-primary/10 text-primary"
+                : "border-hairline bg-foreground/[0.04] text-foreground/70"
+            }`}
+          >
+            <span
+              className={`size-1.5 rounded-full ${
+                isAdmin ? "bg-primary" : "bg-foreground/50"
+              }`}
+            />
+            {roleLabel}
+          </span>
+          <span className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground truncate">
+            {user?.email}
+          </span>
         </div>
 
         {/* Mobile nav */}
