@@ -378,7 +378,7 @@ function SectionFrame({
       }`}
     >
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 py-32 md:py-44">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 mb-16 md:mb-20">
+        <Reveal as="div" className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 mb-16 md:mb-20">
           <div className="lg:col-span-5">
             <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-6 flex items-center gap-3">
               <span className="h-px w-8 bg-primary" />
@@ -396,8 +396,8 @@ function SectionFrame({
               </p>
             </div>
           )}
-        </div>
-        {children}
+        </Reveal>
+        <Reveal delay={120}>{children}</Reveal>
       </div>
     </section>
   );
