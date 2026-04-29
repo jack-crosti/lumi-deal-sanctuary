@@ -130,7 +130,7 @@ export default function Auth() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full inline-flex items-center justify-center gap-3 rounded-sm bg-primary px-6 py-4 text-[11px] tracking-eyebrow uppercase text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
+              className="lumi-btn-primary w-full disabled:opacity-60"
             >
               {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               {mode === "signin" ? "Initialise session" : "Request access"}
