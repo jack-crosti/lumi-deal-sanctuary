@@ -576,6 +576,42 @@ export type Database = {
           },
         ]
       }
+      presentation_snapshots: {
+        Row: {
+          blocks: Json
+          business_id: string
+          change_summary: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          source_version_id: string | null
+          status: Database["public"]["Enums"]["presentation_status"]
+          version_number: number
+        }
+        Insert: {
+          blocks?: Json
+          business_id: string
+          change_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          source_version_id?: string | null
+          status: Database["public"]["Enums"]["presentation_status"]
+          version_number: number
+        }
+        Update: {
+          blocks?: Json
+          business_id?: string
+          change_summary?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          source_version_id?: string | null
+          status?: Database["public"]["Enums"]["presentation_status"]
+          version_number?: number
+        }
+        Relationships: []
+      }
       presentation_versions: {
         Row: {
           business_id: string
@@ -747,6 +783,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      restore_presentation_snapshot: {
+        Args: { _snapshot_id: string }
+        Returns: string
+      }
+      save_presentation_snapshot: {
+        Args: { _change_summary?: string; _version_id: string }
+        Returns: string
       }
       visibility_rank: {
         Args: { _v: Database["public"]["Enums"]["document_visibility"] }
