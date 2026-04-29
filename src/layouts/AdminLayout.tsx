@@ -10,5 +10,5 @@ const nav: NavItem[] = [
 ];
 
 export default function AdminLayout() {
-  return <AppShell area="Admin" nav={nav} />;
+  return <AppShell area="Admin" nav={nav} roleAccent="admin" />;
 }

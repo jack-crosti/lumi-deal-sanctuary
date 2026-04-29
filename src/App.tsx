@@ -36,7 +36,14 @@ const App = () => (
         <AuthProvider>
           <Routes>
             {/* Public */}
-            <Route path="/" element={<Index />} />
+            <Route
+              path="/"
+              element={
+                <RedirectIfAuthed>
+                  <Index />
+                </RedirectIfAuthed>
+              }
+            />
             <Route path="/invite" element={<Invite />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route
