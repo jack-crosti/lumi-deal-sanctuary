@@ -383,8 +383,8 @@ function Settings({
   onDelete,
 }: {
   b: Business;
-  onStatusChange: (s: BusinessStatus) => Promise<void>;
-  onDelete: () => Promise<void>;
+  onStatusChange: (s: BusinessStatus) => void | Promise<unknown>;
+  onDelete: () => void | Promise<unknown>;
 }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
