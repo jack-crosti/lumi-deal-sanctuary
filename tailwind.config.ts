@@ -68,11 +68,16 @@ export default {
       },
       backgroundImage: {
         radiance: "var(--gradient-radiance)",
+        spotlight: "var(--gradient-spotlight)",
         edge: "var(--gradient-edge)",
+        vignette: "var(--gradient-vignette)",
+        "card-gradient": "var(--gradient-card)",
+        gold: "var(--gradient-gold)",
       },
       boxShadow: {
         cinema: "var(--shadow-cinema)",
         vault: "var(--shadow-vault)",
+        portrait: "var(--shadow-portrait)",
       },
       borderRadius: {
         lg: "var(--radius)",
