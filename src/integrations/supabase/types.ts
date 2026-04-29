@@ -520,30 +520,72 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_notes: string | null
+          budget_max: number | null
+          budget_min: number | null
+          buyer_status: Database["public"]["Enums"]["buyer_status"]
+          buyer_type: Database["public"]["Enums"]["buyer_type"] | null
+          ca_status: Database["public"]["Enums"]["ca_status"]
           company: string | null
           created_at: string
           email: string | null
+          finance_status: Database["public"]["Enums"]["finance_status"] | null
+          first_name: string | null
           full_name: string | null
+          hospitality_experience: string | null
           id: string
+          is_pending: boolean
+          last_name: string | null
+          owner_intent: Database["public"]["Enums"]["owner_intent"] | null
           phone: string | null
+          preferred_business_type: string | null
+          preferred_location: string | null
           updated_at: string
         }
         Insert: {
+          admin_notes?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          buyer_status?: Database["public"]["Enums"]["buyer_status"]
+          buyer_type?: Database["public"]["Enums"]["buyer_type"] | null
+          ca_status?: Database["public"]["Enums"]["ca_status"]
           company?: string | null
           created_at?: string
           email?: string | null
+          finance_status?: Database["public"]["Enums"]["finance_status"] | null
+          first_name?: string | null
           full_name?: string | null
+          hospitality_experience?: string | null
           id: string
+          is_pending?: boolean
+          last_name?: string | null
+          owner_intent?: Database["public"]["Enums"]["owner_intent"] | null
           phone?: string | null
+          preferred_business_type?: string | null
+          preferred_location?: string | null
           updated_at?: string
         }
         Update: {
+          admin_notes?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          buyer_status?: Database["public"]["Enums"]["buyer_status"]
+          buyer_type?: Database["public"]["Enums"]["buyer_type"] | null
+          ca_status?: Database["public"]["Enums"]["ca_status"]
           company?: string | null
           created_at?: string
           email?: string | null
+          finance_status?: Database["public"]["Enums"]["finance_status"] | null
+          first_name?: string | null
           full_name?: string | null
+          hospitality_experience?: string | null
           id?: string
+          is_pending?: boolean
+          last_name?: string | null
+          owner_intent?: Database["public"]["Enums"]["owner_intent"] | null
           phone?: string | null
+          preferred_business_type?: string | null
+          preferred_location?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -628,6 +670,20 @@ export type Database = {
         | "ready_to_publish"
         | "published"
         | "archived"
+      buyer_status:
+        | "new"
+        | "active"
+        | "warm"
+        | "hot"
+        | "not_suitable"
+        | "archived"
+      buyer_type:
+        | "individual"
+        | "company"
+        | "investor"
+        | "family_office"
+        | "other"
+      ca_status: "not_sent" | "sent" | "signed" | "approved"
       document_type:
         | "im"
         | "financials"
@@ -647,6 +703,12 @@ export type Database = {
         | "financial"
         | "serious"
         | "full_dd"
+      finance_status:
+        | "unknown"
+        | "self_funded"
+        | "pre_approved"
+        | "needs_finance"
+        | "not_disclosed"
       location_mode: "blind" | "suburb" | "exact"
       offer_status:
         | "draft"
@@ -654,6 +716,7 @@ export type Database = {
         | "withdrawn"
         | "progressing"
         | "closed"
+      owner_intent: "working_owner" | "investor" | "either"
       presentation_status: "draft" | "published" | "archived"
       question_status: "open" | "answered" | "closed"
       request_status: "open" | "in_progress" | "closed"
@@ -825,6 +888,22 @@ export const Constants = {
         "published",
         "archived",
       ],
+      buyer_status: [
+        "new",
+        "active",
+        "warm",
+        "hot",
+        "not_suitable",
+        "archived",
+      ],
+      buyer_type: [
+        "individual",
+        "company",
+        "investor",
+        "family_office",
+        "other",
+      ],
+      ca_status: ["not_sent", "sent", "signed", "approved"],
       document_type: [
         "im",
         "financials",
@@ -846,6 +925,13 @@ export const Constants = {
         "serious",
         "full_dd",
       ],
+      finance_status: [
+        "unknown",
+        "self_funded",
+        "pre_approved",
+        "needs_finance",
+        "not_disclosed",
+      ],
       location_mode: ["blind", "suburb", "exact"],
       offer_status: [
         "draft",
@@ -854,6 +940,7 @@ export const Constants = {
         "progressing",
         "closed",
       ],
+      owner_intent: ["working_owner", "investor", "either"],
       presentation_status: ["draft", "published", "archived"],
       question_status: ["open", "answered", "closed"],
       request_status: ["open", "in_progress", "closed"],
