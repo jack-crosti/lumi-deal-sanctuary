@@ -250,8 +250,8 @@ ${JSON.stringify(sourceContext, null, 2)}`;
       .update({
         status: "pending", // awaiting admin decision
         result_preview: previewText,
-        // Store full proposal in error_message-free way: reuse a JSONified result_preview is not ideal,
-        // so we keep structured data on the client side via a return payload below.
+        proposal: parsed,
+        warnings: parsed.warnings ?? [],
       })
       .eq("id", reqRow.id);
 
