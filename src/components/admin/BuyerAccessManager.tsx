@@ -173,7 +173,7 @@ export function BuyerAccessManager({ buyerId }: { buyerId: string }) {
                 <div className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mt-1">
                   {r.business?.name && r.business?.public_title && r.business.public_title !== r.business.name
                     ? r.business.name
-                    : "Mandate"}
+                    : "Information Memorandum"}
                 </div>
               </div>
               <select

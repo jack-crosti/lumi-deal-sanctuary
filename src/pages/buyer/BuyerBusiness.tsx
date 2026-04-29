@@ -344,7 +344,7 @@ function HeroSection({
         <div className="relative -mt-32 md:-mt-48 px-6 md:px-14 pb-14 md:pb-16">
           <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-5 flex items-center gap-3 animate-rise">
             <span className="h-px w-8 bg-primary" />
-            Confidential mandate
+            Confidential Information Memorandum
             {business.business_type && <span className="text-muted-foreground">· {business.business_type}</span>}
           </div>
           <h1 className="font-display text-4xl md:text-6xl lg:text-7xl tracking-display leading-[1.0] text-balance max-w-4xl animate-rise delay-100">
@@ -862,7 +862,7 @@ function AskSection({ businessId }: { businessId: string }) {
       <SectionEyebrow
         icon={MessageSquare}
         eyebrow="Ask about this business"
-        title="Speak directly with the mandated broker."
+        title="Speak directly with the assigned broker."
         intro="Questions are reviewed personally and answered in confidence."
       />
       <div className="mt-10 lumi-card-elevated p-8 md:p-10">

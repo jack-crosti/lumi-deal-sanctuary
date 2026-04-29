@@ -4,14 +4,14 @@ import { PageHeader } from "@/components/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 
 const stats = [
-  { k: "Active mandates", v: "0", hint: "Published listings" },
+  { k: "Active Information Memorandums", v: "0", hint: "Published listings" },
   { k: "Approved buyers", v: "0", hint: "Verified accounts" },
   { k: "Pending requests", v: "0", hint: "Awaiting reply" },
   { k: "This week", v: "0", hint: "New activity events" },
 ];
 
 const quickActions = [
-  { to: "/admin/businesses/new", icon: Plus, label: "Create new mandate", body: "Add a business and configure its confidentiality level." },
+  { to: "/admin/businesses/new", icon: Plus, label: "Create new Information Memorandum", body: "Add a business and configure its confidentiality level." },
   { to: "/admin/buyers", icon: Users, label: "Invite a buyer", body: "Vet and grant access to a new approved buyer." },
   { to: "/admin/requests", icon: MessageSquare, label: "Review inbox", body: "Triage buyer questions and discussion requests." },
   { to: "/admin/activity", icon: Activity, label: "Inspect activity", body: "See who's reading what, and how often." },
@@ -25,11 +25,11 @@ export default function AdminDashboard() {
       <PageHeader
         eyebrow="Broker console"
         title={`Welcome back, ${name}.`}
-        description="Curate the deal room. Approve buyers, manage listings, and monitor every interaction across active mandates."
+        description="Curate the deal room. Approve buyers, manage listings, and monitor every interaction across active Information Memorandums."
         actions={
           <Link to="/admin/businesses/new" className="lumi-btn-primary group">
             <Plus className="h-3.5 w-3.5" />
-            New mandate
+            New Information Memorandum
           </Link>
         }
       />
@@ -82,10 +82,10 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      {/* Empty mandates panel */}
+      {/* Empty Information Memorandums panel */}
       <section className="animate-rise delay-500">
         <div className="flex items-baseline justify-between mb-8">
-          <h2 className="font-display text-2xl md:text-3xl tracking-display">Active mandates</h2>
+          <h2 className="font-display text-2xl md:text-3xl tracking-display">Active Information Memorandums</h2>
           <Link to="/admin/businesses" className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground hover:text-primary transition-colors lumi-link">
             View all
           </Link>
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
           <div className="relative">
             <Building2 className="h-6 w-6 text-primary mx-auto mb-6" strokeWidth={1.25} />
             <div className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-primary mb-4">
-              No mandates yet
+              No Information Memorandums yet
             </div>
             <h3 className="font-display text-2xl md:text-3xl tracking-display mb-3">
               Begin with your first listing.
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
               Create a business, set its confidentiality mode, and assign approved buyers. Listings stay in draft until you publish.
             </p>
             <Link to="/admin/businesses/new" className="lumi-btn-primary">
-              Create first mandate
+              Create first Information Memorandum
               <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           </div>
