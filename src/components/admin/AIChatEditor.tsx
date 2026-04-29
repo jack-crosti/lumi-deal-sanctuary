@@ -216,7 +216,7 @@ export default function AIChatEditor({
 
     const { error } = await supabase
       .from("presentation_sections")
-      .update(patch)
+      .update(patch as never)
       .eq("id", block.id);
     if (error) {
       setBusyId(null);
