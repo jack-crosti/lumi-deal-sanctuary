@@ -46,7 +46,8 @@ import {
 } from "@/lib/presentationBlocks";
 import PresentationPreview from "./PresentationPreview";
 import PresentationHistory from "./PresentationHistory";
-import { History as HistoryIcon } from "lucide-react";
+import PresentationAIWorkspace from "./PresentationAIWorkspace";
+import { History as HistoryIcon, Sparkles } from "lucide-react";
 
 interface VersionRow {
   id: string;
@@ -97,6 +98,7 @@ export default function PresentationStudio({ businessId }: Props) {
   const [showSaveDraft, setShowSaveDraft] = useState(false);
   const [draftSummary, setDraftSummary] = useState("");
   const [historyKey, setHistoryKey] = useState(0);
+  const [showAIWorkspace, setShowAIWorkspace] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -307,6 +309,13 @@ export default function PresentationStudio({ businessId }: Props) {
               <Save className="h-3.5 w-3.5" />
               Save draft
             </button>
+            <button
+              onClick={() => setShowAIWorkspace(true)}
+              className="lumi-btn-ghost"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              AI Editor
+            </button>
             <button onClick={() => setAdding(true)} className="lumi-btn-primary">
               <Plus className="h-3.5 w-3.5" />
               Add block
@@ -484,6 +493,24 @@ export default function PresentationStudio({ businessId }: Props) {
           onRestored={onRestored}
         />
       </section>
+
+      {/* AI Workspace */}
+      {showAIWorkspace && (
+        <PresentationAIWorkspace
+          businessId={businessId}
+          versionId={version.id}
+          versionNumber={version.version_number}
+          blocks={blocks}
+          onClose={() => setShowAIWorkspace(false)}
+          onToggleHidden={(b) => {
+            void toggleHidden(b);
+          }}
+          onEdit={(b) => {
+            setShowAIWorkspace(false);
+            setEditing(b);
+          }}
+        />
+      )}
     </div>
   );
 }
