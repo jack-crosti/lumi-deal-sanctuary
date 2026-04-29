@@ -27,6 +27,14 @@ import { toast } from "sonner";
 import BuyerDocuments from "@/components/buyer/BuyerDocuments";
 import { formatCurrency } from "@/lib/format";
 import { ACCESS_LEVEL_OPTIONS, type AccessLevel } from "@/lib/buyerLabels";
+import {
+  REQUEST_TYPE_OPTIONS,
+  CONTACT_METHOD_OPTIONS,
+  PRIORITY_OPTIONS,
+  type RequestType,
+  type ContactMethod,
+  type RequestPriority,
+} from "@/lib/requestLabels";
 
 type LocationMode = "blind" | "suburb" | "exact";
 
@@ -1178,29 +1186,70 @@ function GallerySection({ business }: { business: BusinessDetail }) {
 
 function AskSection({ businessId }: { businessId: string }) {
   const { user } = useAuth();
-  const [question, setQuestion] = useState("");
+  const [requestType, setRequestType] = useState<RequestType>("information");
+  const [message, setMessage] = useState("");
+  const [contactMethod, setContactMethod] = useState<ContactMethod>("email");
+  const [callTime, setCallTime] = useState("");
+  const [priority, setPriority] = useState<RequestPriority>("normal");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const wantsCall = requestType === "call" || requestType === "vendor_meeting" || contactMethod === "phone" || contactMethod === "either";
+
+  const reset = () => {
+    setMessage("");
+    setCallTime("");
+    setPriority("normal");
+    setContactMethod("email");
+    setRequestType("information");
+    setSubmitted(false);
+  };
+
   const submit = async () => {
-    if (!user || !question.trim()) return;
+    if (!user || !message.trim()) return;
     setSubmitting(true);
-    const { error } = await supabase.from("buyer_questions").insert({
-      buyer_id: user.id,
-      business_id: businessId,
-      question: question.trim(),
-    });
+
+    const { data: inserted, error } = await supabase
+      .from("buyer_requests")
+      .insert({
+        buyer_id: user.id,
+        business_id: businessId,
+        // Cast through unknown so TS accepts new enum values until types regenerate
+        request_type: requestType as unknown as "information" | "document_access" | "call" | "other",
+        message: message.trim(),
+        preferred_contact: contactMethod,
+        preferred_call_time: wantsCall ? callTime.trim() || null : null,
+        priority,
+      } as never)
+      .select("id")
+      .single();
+
     setSubmitting(false);
-    if (error) return toast.error(error.message);
+    if (error || !inserted) {
+      toast.error(error?.message || "Could not send your request.");
+      return;
+    }
+
     void supabase.from("buyer_activity").insert({
       buyer_id: user.id,
       business_id: businessId,
-      event_type: "question_submitted",
-      metadata: {},
+      event_type: "request_submitted",
+      metadata: {
+        request_id: (inserted as { id: string }).id,
+        request_type: requestType,
+        priority,
+      },
     });
+
+    // Fire-and-forget admin notification (placeholder — currently logs only)
+    void supabase.functions
+      .invoke("notify-admin-request", { body: { request_id: (inserted as { id: string }).id } })
+      .catch(() => {
+        /* notification failures must not break the buyer flow */
+      });
+
     setSubmitted(true);
-    setQuestion("");
-    toast.success("Question sent. The broker will respond directly.");
+    toast.success("Request sent. The broker will respond directly.");
   };
 
   return (
@@ -1208,7 +1257,7 @@ function AskSection({ businessId }: { businessId: string }) {
       id="ask"
       eyebrow="13 — Ask about this business"
       title="Speak directly with the assigned broker."
-      intro="Questions are reviewed personally and answered in confidence."
+      intro="Questions, document requests, calls and meetings — all routed personally and answered in confidence."
       icon={MessageSquare}
     >
       <div className="border-t hairline pt-10 max-w-3xl">
@@ -1216,31 +1265,126 @@ function AskSection({ businessId }: { businessId: string }) {
           <div className="py-10">
             <Check className="h-6 w-6 text-primary mb-5" />
             <h3 className="font-display text-3xl md:text-4xl tracking-display mb-3">
-              Your question is with the broker.
+              Your request is with the broker.
             </h3>
             <p className="text-base md:text-lg text-muted-foreground leading-[1.7] max-w-xl">
-              You will receive a response by email within one business day.
+              You will receive a personal response, typically within one business day. Anything
+              urgent is flagged and answered first.
             </p>
-            <button onClick={() => setSubmitted(false)} className="mt-8 lumi-btn-ghost">
-              Ask another
+            <button onClick={reset} className="mt-8 lumi-btn-ghost">
+              Send another request
             </button>
           </div>
         ) : (
-          <>
-            <textarea
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              rows={6}
-              placeholder="What would you like to know? Lease terms, growth, owner transition, supplier mix…"
-              className="lumi-input resize-none text-base md:text-lg leading-[1.6]"
-            />
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="space-y-8">
+            {/* Request type chips */}
+            <div>
+              <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 block">
+                Request type
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {REQUEST_TYPE_OPTIONS.filter((o) => o.value !== "document_access").map((o) => {
+                  const active = requestType === o.value;
+                  return (
+                    <button
+                      key={o.value}
+                      type="button"
+                      onClick={() => setRequestType(o.value as RequestType)}
+                      className={`px-4 py-2 rounded-full font-mono-brand text-[10px] tracking-eyebrow uppercase border transition-all duration-300 ${
+                        active
+                          ? "border-primary bg-primary/15 text-primary"
+                          : "border-hairline-strong text-muted-foreground hover:border-foreground/40 hover:text-foreground"
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Message */}
+            <div>
+              <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 block">
+                Message
+              </label>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={6}
+                placeholder="Share context, specific questions or what you would like to discuss…"
+                className="lumi-input resize-none text-base md:text-lg leading-[1.6]"
+              />
+            </div>
+
+            {/* Contact + urgency */}
+            <div className="grid md:grid-cols-2 gap-6 md:gap-10">
+              <div>
+                <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 block">
+                  Preferred contact method
+                </label>
+                <select
+                  value={contactMethod}
+                  onChange={(e) => setContactMethod(e.target.value as ContactMethod)}
+                  className="lumi-input text-base"
+                >
+                  {CONTACT_METHOD_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 block">
+                  Urgency
+                </label>
+                <div className="flex gap-2">
+                  {PRIORITY_OPTIONS.map((o) => {
+                    const active = priority === o.value;
+                    return (
+                      <button
+                        key={o.value}
+                        type="button"
+                        onClick={() => setPriority(o.value as RequestPriority)}
+                        className={`flex-1 px-4 py-3 rounded-md font-mono-brand text-[10px] tracking-eyebrow uppercase border transition-all duration-300 ${
+                          active
+                            ? o.value === "high"
+                              ? "border-primary bg-primary/20 text-primary"
+                              : "border-foreground/60 bg-foreground/5 text-foreground"
+                            : "border-hairline-strong text-muted-foreground hover:border-foreground/40"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Preferred call time — conditional */}
+            {wantsCall && (
+              <div>
+                <label className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground mb-3 block">
+                  Preferred call time
+                </label>
+                <input
+                  value={callTime}
+                  onChange={(e) => setCallTime(e.target.value)}
+                  placeholder="e.g. Weekdays 9am–11am NZT, or specific date and time"
+                  className="lumi-input text-base"
+                />
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
               <p className="font-mono-brand text-[9px] tracking-eyebrow uppercase text-muted-foreground">
                 Confidential · sent to broker only
               </p>
               <button
                 onClick={submit}
-                disabled={submitting || !question.trim()}
+                disabled={submitting || !message.trim()}
                 className="lumi-btn-primary disabled:opacity-50"
               >
                 {submitting ? (
@@ -1248,10 +1392,10 @@ function AskSection({ businessId }: { businessId: string }) {
                 ) : (
                   <Send className="h-3.5 w-3.5" />
                 )}
-                Send question
+                Send request
               </button>
             </div>
-          </>
+          </div>
         )}
       </div>
     </SectionFrame>
