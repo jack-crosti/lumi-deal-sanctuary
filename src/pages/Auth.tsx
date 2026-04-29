@@ -23,8 +23,8 @@ export default function Auth() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back.");
-        // RedirectIfAuthed on /auth will route admin → /admin, buyer → /portal
-        navigate("/", { replace: true });
+        // Navigate to /admin — RequireAuth(role=admin) will bounce non-admins to /portal automatically.
+        navigate("/admin", { replace: true });
       } else {
         const { error } = await supabase.auth.signUp({
           email,
