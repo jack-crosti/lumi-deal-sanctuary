@@ -24,6 +24,8 @@ export function RequireAuth({
 
   if (loading) return <FullScreenLoader />;
   if (!session) return <Navigate to="/login" state={{ from: location }} replace />;
+  // No role at all — account exists but hasn't been assigned access yet.
+  if (role === null) return <Navigate to="/unauthorized" replace />;
   if (role && userRole !== role) {
     return <Navigate to="/unauthorized" replace />;
   }
