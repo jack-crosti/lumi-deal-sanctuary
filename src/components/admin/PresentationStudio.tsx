@@ -418,6 +418,72 @@ export default function PresentationStudio({ businessId }: Props) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Save draft dialog */}
+      <Dialog open={showSaveDraft} onOpenChange={setShowSaveDraft}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Save current draft to history</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-[1.7]">
+              This captures a full snapshot of the current presentation — every block, in
+              order — and adds it to version history. You can preview or restore it later.
+            </p>
+            <label className="block">
+              <span className="font-mono-brand text-[10px] tracking-eyebrow uppercase text-muted-foreground mb-2 block">
+                Change summary <span className="text-muted-foreground/60 normal-case tracking-normal">(optional)</span>
+              </span>
+              <textarea
+                className="lumi-input min-h-[100px]"
+                value={draftSummary}
+                onChange={(e) => setDraftSummary(e.target.value)}
+                placeholder="e.g. Updated financial snapshot after Q3 figures"
+              />
+            </label>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setShowSaveDraft(false)}
+                className="lumi-btn-ghost"
+                disabled={savingDraft}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveDraftSnapshot}
+                disabled={savingDraft}
+                className="lumi-btn-primary disabled:opacity-50"
+              >
+                {savingDraft ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Save className="h-3.5 w-3.5" />
+                )}
+                Save snapshot
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Version history */}
+      <section className="space-y-4 pt-2">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <HistoryIcon className="h-4 w-4 text-primary" strokeWidth={1.5} />
+            <h3 className="font-display text-xl tracking-display">Version history</h3>
+          </div>
+          <p className="text-[11px] text-muted-foreground max-w-md text-right">
+            Restoring brings a version back as a new draft. Your live published version is
+            never overwritten.
+          </p>
+        </div>
+        <PresentationHistory
+          businessId={businessId}
+          refreshKey={historyKey}
+          onRestored={onRestored}
+        />
+      </section>
     </div>
   );
 }
