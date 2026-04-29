@@ -21,6 +21,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import BusinessDocuments from "@/components/admin/BusinessDocuments";
 import BusinessOfferInterest from "@/components/admin/BusinessOfferInterest";
 import ActivityFeed from "@/components/admin/ActivityFeed";
+import PresentationStudio from "@/components/admin/PresentationStudio";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -194,10 +195,7 @@ export default function AdminBusinessDetail() {
             <Overview b={b} />
           </TabsContent>
           <TabsContent value="presentation" className="mt-0">
-            <PlaceholderPanel
-              title="Presentation Studio"
-              body="A cinematic, block-based editor for the buyer-facing presentation. Arrives in a later stage."
-            />
+            <PresentationStudio businessId={b.id} />
           </TabsContent>
           <TabsContent value="documents" className="mt-0">
             <BusinessDocuments businessId={b.id} />

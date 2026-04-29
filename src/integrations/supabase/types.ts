@@ -513,31 +513,58 @@ export type Database = {
       }
       presentation_sections: {
         Row: {
+          body: string | null
           content: Json
           created_at: string
           id: string
+          image_refs: string[]
+          is_hidden: boolean
+          key_points: string[]
           position: number
+          required_access_level: Database["public"]["Enums"]["access_level"]
+          review_status: Database["public"]["Enums"]["block_review_status"]
           section_type: Database["public"]["Enums"]["section_type"]
+          subtitle: string | null
+          title: string | null
           updated_at: string
           version_id: string
+          visibility: Database["public"]["Enums"]["document_visibility"]
         }
         Insert: {
+          body?: string | null
           content?: Json
           created_at?: string
           id?: string
+          image_refs?: string[]
+          is_hidden?: boolean
+          key_points?: string[]
           position?: number
+          required_access_level?: Database["public"]["Enums"]["access_level"]
+          review_status?: Database["public"]["Enums"]["block_review_status"]
           section_type: Database["public"]["Enums"]["section_type"]
+          subtitle?: string | null
+          title?: string | null
           updated_at?: string
           version_id: string
+          visibility?: Database["public"]["Enums"]["document_visibility"]
         }
         Update: {
+          body?: string | null
           content?: Json
           created_at?: string
           id?: string
+          image_refs?: string[]
+          is_hidden?: boolean
+          key_points?: string[]
           position?: number
+          required_access_level?: Database["public"]["Enums"]["access_level"]
+          review_status?: Database["public"]["Enums"]["block_review_status"]
           section_type?: Database["public"]["Enums"]["section_type"]
+          subtitle?: string | null
+          title?: string | null
           updated_at?: string
           version_id?: string
+          visibility?: Database["public"]["Enums"]["document_visibility"]
         }
         Relationships: [
           {
@@ -748,6 +775,7 @@ export type Database = {
         | "lease_view"
         | "call_request"
       app_role: "admin" | "buyer"
+      block_review_status: "draft" | "needs_review" | "approved"
       business_status:
         | "draft"
         | "internal_review"
@@ -807,7 +835,12 @@ export type Database = {
         | "spa_preparing"
         | "not_proceeding"
       owner_intent: "working_owner" | "investor" | "either"
-      presentation_status: "draft" | "published" | "archived"
+      presentation_status:
+        | "draft"
+        | "published"
+        | "archived"
+        | "internal_review"
+        | "ready_to_publish"
       question_status: "open" | "answered" | "closed"
       request_priority: "normal" | "high"
       request_status:
@@ -993,6 +1026,7 @@ export const Constants = {
         "call_request",
       ],
       app_role: ["admin", "buyer"],
+      block_review_status: ["draft", "needs_review", "approved"],
       business_status: [
         "draft",
         "internal_review",
@@ -1059,7 +1093,13 @@ export const Constants = {
         "not_proceeding",
       ],
       owner_intent: ["working_owner", "investor", "either"],
-      presentation_status: ["draft", "published", "archived"],
+      presentation_status: [
+        "draft",
+        "published",
+        "archived",
+        "internal_review",
+        "ready_to_publish",
+      ],
       question_status: ["open", "answered", "closed"],
       request_priority: ["normal", "high"],
       request_status: [
