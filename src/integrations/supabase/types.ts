@@ -975,6 +975,55 @@ export type Database = {
         Args: { _business: string; _user: string }
         Returns: boolean
       }
+      current_user_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_buyer_business: {
+        Args: { _business_id: string }
+        Returns: {
+          access_level: Database["public"]["Enums"]["access_level"]
+          add_backs: number
+          address: string
+          asking_price: number
+          asking_price_multiple: number
+          business_type: string
+          city: string
+          confidential_title: string
+          ebitda: number
+          financial_notes: string
+          financial_review_status: Database["public"]["Enums"]["financial_review_status"]
+          financial_source: Database["public"]["Enums"]["financial_source"]
+          gross_profit: number
+          gross_profit_pct: number
+          headline: string
+          hero_image_url: string
+          id: string
+          industry: string
+          lease_expiry: string
+          location_mode: Database["public"]["Enums"]["location_mode"]
+          name: string
+          normalised_profit: number
+          opening_hours: string
+          owner_involvement: string
+          owner_profit: number
+          public_title: string
+          region: string
+          renewal_rights: string
+          rent_pct_sales: number
+          rent_per_year: number
+          revenue: number
+          staff_summary: string
+          stock_value: number
+          suburb: string
+          summary: string
+          tenure: string
+          wage_cost: number
+          wage_pct: number
+          weekly_sales_max: number
+          weekly_sales_min: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

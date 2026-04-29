@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { getRoleForEmail, type AppRole } from "@/lib/authRoles";
+import type { AppRole } from "@/lib/authRoles";
 import { logActivity } from "@/lib/activity";
 
 export type { AppRole };
@@ -18,13 +18,31 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
+  const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
-  const role = getRoleForEmail(session?.user?.email);
 
   useEffect(() => {
+    async function resolveRole(s: Session | null) {
+      if (!s?.user) {
+        setRole(null);
+        return;
+      }
+      // Server-truth role lookup. Falls back to 'buyer' on any error so
+      // we never grant admin without a verified user_roles row.
+      const { data, error } = await supabase.rpc("current_user_role");
+      if (error || !data) {
+        setRole("buyer");
+      } else {
+        setRole(data === "admin" ? "admin" : "buyer");
+      }
+    }
+
     const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
-      setLoading(false);
+      // Defer role lookup so RLS sees the new auth context.
+      setTimeout(() => {
+        void resolveRole(newSession).finally(() => setLoading(false));
+      }, 0);
       if (event === "SIGNED_IN" && newSession?.user) {
         // Defer so RLS sees the new auth context
         setTimeout(() => {
@@ -33,8 +51,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
+      await resolveRole(data.session);
       setLoading(false);
     });
 
