@@ -1288,7 +1288,7 @@ function AskSection({ businessId }: { businessId: string }) {
         preferred_contact: contactMethod,
       },
     });
-    if (requestType === "general") {
+    if (requestType === "information" || requestType === "other") {
       void logActivity({
         buyerId: user.id,
         businessId,
