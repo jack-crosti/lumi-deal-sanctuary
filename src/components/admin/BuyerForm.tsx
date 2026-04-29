@@ -79,14 +79,16 @@ export function BuyerForm({ initial }: { initial?: BuyerFormInitial }) {
       email: values.email.trim().toLowerCase(),
       phone: values.phone?.trim() || null,
       company: values.company?.trim() || null,
-      buyer_type: (values.buyer_type || null) as BuyerFormValues["buyer_type"] | null,
+      buyer_type: (values.buyer_type ? values.buyer_type : null) as
+        | "individual" | "company" | "investor" | "family_office" | "other" | null,
       budget_min: toNum(values.budget_min),
       budget_max: toNum(values.budget_max),
       finance_status: values.finance_status,
       hospitality_experience: values.hospitality_experience?.trim() || null,
       preferred_business_type: values.preferred_business_type?.trim() || null,
       preferred_location: values.preferred_location?.trim() || null,
-      owner_intent: (values.owner_intent || null) as BuyerFormValues["owner_intent"] | null,
+      owner_intent: (values.owner_intent ? values.owner_intent : null) as
+        | "working_owner" | "investor" | "either" | null,
       ca_status: values.ca_status,
       buyer_status: values.buyer_status,
       admin_notes: values.admin_notes?.trim() || null,
@@ -107,7 +109,7 @@ export function BuyerForm({ initial }: { initial?: BuyerFormInitial }) {
         const placeholderId = crypto.randomUUID();
         const { error } = await supabase
           .from("profiles")
-          .insert({ ...payload, id: placeholderId, is_pending: true });
+          .insert([{ ...payload, id: placeholderId, is_pending: true }]);
         if (error) {
           if (error.code === "23505" || /duplicate/i.test(error.message)) {
             toast.error("A buyer with this email already exists.");
