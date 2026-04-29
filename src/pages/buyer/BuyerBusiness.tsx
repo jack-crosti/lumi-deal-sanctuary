@@ -278,6 +278,7 @@ export default function BuyerBusiness() {
       {/* Side rail nav (desktop only) */}
       <SideRail activeSection={activeSection} />
 
+      <BrokerWalkthroughSection businessId={business.id} />
       <LocationSection business={business} showExactLocation={showExactLocation} />
       <HighlightsSection business={business} />
       <AboutSection business={business} />
