@@ -25,6 +25,12 @@ interface Props {
   businessId: string;
   hasPublished: boolean;
   onApplied: () => void;
+  /**
+   * If provided, the dialog skips the upload step and hydrates from this
+   * existing import row — used when the admin lands on the studio after
+   * kicking off an import from elsewhere (e.g. the Create-from-PDF flow).
+   */
+  initialImportId?: string | null;
 }
 
 type ImportStatus =
@@ -84,6 +90,7 @@ export default function IMImportDialog({
   businessId,
   hasPublished,
   onApplied,
+  initialImportId,
 }: Props) {
   const [step, setStep] = useState<"upload" | "processing" | "review" | "error">(
     "upload",
@@ -96,13 +103,64 @@ export default function IMImportDialog({
 
   useEffect(() => {
     if (open) {
-      setStep("upload");
       setFile(null);
       setAdminNotes("");
-      setImportRow(null);
       setConfirmApply(false);
+      if (!initialImportId) {
+        setStep("upload");
+        setImportRow(null);
+      }
     }
-  }, [open]);
+  }, [open, initialImportId]);
+
+  // Hydrate from an existing import row (and poll while it's processing).
+  useEffect(() => {
+    if (!open || !initialImportId) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const tick = async () => {
+      const { data, error } = await supabase
+        .from("im_imports")
+        .select("*")
+        .eq("id", initialImportId)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !data) {
+        setStep("error");
+        setImportRow({
+          id: initialImportId,
+          business_id: businessId,
+          status: "failed",
+          file_name: null,
+          admin_notes: null,
+          extracted_facts: null,
+          generated_blocks: null,
+          warnings: [],
+          error_message: error?.message ?? "Import not found",
+        });
+        return;
+      }
+      const r = data as unknown as ImportRow;
+      setImportRow(r);
+      if (r.status === "ready_for_review") {
+        setStep("review");
+      } else if (r.status === "failed") {
+        setStep("error");
+      } else if (r.status === "applied" || r.status === "rejected") {
+        // Already actioned — close so the admin isn't stuck.
+        onOpenChange(false);
+      } else {
+        setStep("processing");
+        timer = setTimeout(tick, 3000);
+      }
+    };
+    void tick();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [open, initialImportId, businessId, onOpenChange]);
 
   const startImport = async () => {
     if (!file) return;
