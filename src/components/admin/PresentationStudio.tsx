@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Plus,
@@ -103,6 +104,19 @@ export default function PresentationStudio({ businessId }: Props) {
   const [showAIWorkspace, setShowAIWorkspace] = useState(false);
   const [showIMImport, setShowIMImport] = useState(false);
   const [hasPublished, setHasPublished] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [pendingImportId, setPendingImportId] = useState<string | null>(null);
+
+  // If we arrived here from the Create-from-PDF flow with ?openImport=<id>,
+  // open the import dialog hydrated from that row so the admin can watch the
+  // AI extraction finish (or recover from a failure).
+  useEffect(() => {
+    const id = searchParams.get("openImport");
+    if (id) {
+      setPendingImportId(id);
+      setShowIMImport(true);
+    }
+  }, [searchParams]);
 
   const load = async () => {
     setLoading(true);
@@ -551,9 +565,20 @@ export default function PresentationStudio({ businessId }: Props) {
 
       <IMImportDialog
         open={showIMImport}
-        onOpenChange={setShowIMImport}
+        onOpenChange={(v) => {
+          setShowIMImport(v);
+          if (!v) {
+            setPendingImportId(null);
+            if (searchParams.get("openImport")) {
+              const next = new URLSearchParams(searchParams);
+              next.delete("openImport");
+              setSearchParams(next, { replace: true });
+            }
+          }
+        }}
         businessId={businessId}
         hasPublished={hasPublished}
+        initialImportId={pendingImportId}
         onApplied={() => {
           void load();
           setHistoryKey((k) => k + 1);
