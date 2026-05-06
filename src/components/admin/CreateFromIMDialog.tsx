@@ -97,15 +97,19 @@ export default function CreateFromIMDialog({ open, onOpenChange }: Props) {
       if (insErr || !imp) throw new Error(insErr?.message ?? "Could not start import");
 
       setStage("Sending to AI for extraction…");
-      // Fire-and-forget: navigate the admin to the Presentation Studio so they
-      // can watch the import row finish there instead of blocking this dialog.
+      // Fire-and-forget the AI call, then jump to the Presentation Studio with
+      // the import id so it can hydrate the import dialog and poll for the
+      // result. This keeps the admin in the studio (where the result lives)
+      // while still surfacing errors via the import dialog itself.
       void supabase.functions.invoke("generate-presentation-from-im", {
         body: { import_id: imp.id },
       });
 
       toast.success("Listing created — opening Presentation Studio");
       onOpenChange(false);
-      navigate(`/admin/businesses/${biz.id}?tab=presentation`);
+      navigate(
+        `/admin/businesses/${biz.id}?tab=presentation&openImport=${imp.id}`,
+      );
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Something went wrong";
       console.error("[CreateFromIM]", e);
