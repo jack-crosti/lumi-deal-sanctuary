@@ -39,14 +39,18 @@ export default function BuyerDashboard() {
     void logActivity({ buyerId: user.id, event: "dashboard_view" });
     (async () => {
       // Pull access rows joined with the assigned business. RLS ensures we only get our own.
+      // Only select columns that are safe to expose at every access level.
+      // Restricted financial fields (ebitda, normalised_profit) and the
+      // exact `address` are intentionally omitted here — they must be
+      // fetched via the masking RPC `get_buyer_business` on the detail page.
       const { data, error } = await supabase
         .from("buyer_business_access")
         .select(
           `access_level,
            business:businesses(
              id,name,public_title,confidential_title,business_type,industry,
-             location_mode,suburb,city,region,address,
-             asking_price,ebitda,normalised_profit,status,hero_image_url
+             location_mode,suburb,city,region,
+             asking_price,status,hero_image_url
            )`,
         )
         .eq("buyer_id", user.id);
@@ -58,10 +62,17 @@ export default function BuyerDashboard() {
         return;
       }
 
-      type Row = { access_level: AccessLevel; business: Omit<AssignedBusiness, "access_level"> | null };
+      type SafeBusiness = Omit<AssignedBusiness, "access_level" | "ebitda" | "normalised_profit" | "address">;
+      type Row = { access_level: AccessLevel; business: SafeBusiness | null };
       const mapped: AssignedBusiness[] = (data as unknown as Row[])
         .filter((r) => r.business && r.business.status === "published")
-        .map((r) => ({ ...(r.business as Omit<AssignedBusiness, "access_level">), access_level: r.access_level }));
+        .map((r) => ({
+          ...(r.business as SafeBusiness),
+          address: null,
+          ebitda: null,
+          normalised_profit: null,
+          access_level: r.access_level,
+        }));
 
       setItems(mapped);
     })();
