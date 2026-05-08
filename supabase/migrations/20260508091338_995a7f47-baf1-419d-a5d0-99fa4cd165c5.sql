@@ -1,0 +1,10 @@
+GRANT EXECUTE ON FUNCTION public.buyer_has_business(uuid, uuid) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.buyer_access_level(uuid, uuid) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.buyer_can_see_document(uuid, uuid) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.access_level_rank(public.access_level) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.visibility_rank(public.document_visibility) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.business_has_published_version(uuid) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.current_user_role() TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.get_buyer_business(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.save_presentation_snapshot(uuid, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.restore_presentation_snapshot(uuid) TO authenticated;
