@@ -1031,6 +1031,28 @@ export type Database = {
         }
         Returns: boolean
       }
+      list_buyer_businesses: {
+        Args: never
+        Returns: {
+          access_level: Database["public"]["Enums"]["access_level"]
+          address: string
+          asking_price: number
+          business_type: string
+          city: string
+          confidential_title: string
+          ebitda: number
+          hero_image_url: string
+          id: string
+          industry: string
+          location_mode: Database["public"]["Enums"]["location_mode"]
+          name: string
+          normalised_profit: number
+          public_title: string
+          region: string
+          status: Database["public"]["Enums"]["business_status"]
+          suburb: string
+        }[]
+      }
       restore_presentation_snapshot: {
         Args: { _snapshot_id: string }
         Returns: string
