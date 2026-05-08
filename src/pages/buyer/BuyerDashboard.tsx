@@ -29,6 +29,13 @@ interface AssignedBusiness {
   access_level: AccessLevel;
 }
 
+type SafeBusinessListRpc = {
+  rpc: (fn: "list_buyer_businesses") => Promise<{
+    data: AssignedBusiness[] | null;
+    error: { message: string } | null;
+  }>;
+};
+
 export default function BuyerDashboard() {
   const { user } = useAuth();
   const [items, setItems] = useState<AssignedBusiness[] | null>(null);
@@ -38,22 +45,11 @@ export default function BuyerDashboard() {
     let active = true;
     void logActivity({ buyerId: user.id, event: "dashboard_view" });
     (async () => {
-      // Pull access rows joined with the assigned business. RLS ensures we only get our own.
-      // Only select columns that are safe to expose at every access level.
-      // Restricted financial fields (ebitda, normalised_profit) and the
-      // exact `address` are intentionally omitted here — they must be
-      // fetched via the masking RPC `get_buyer_business` on the detail page.
-      const { data, error } = await supabase
-        .from("buyer_business_access")
-        .select(
-          `access_level,
-           business:businesses(
-             id,name,public_title,confidential_title,business_type,industry,
-             location_mode,suburb,city,region,
-             asking_price,status,hero_image_url
-           )`,
-        )
-        .eq("buyer_id", user.id);
+      // Buyer-facing opportunity data is returned by a server-side RPC that
+      // only exposes dashboard-safe fields and masks confidential columns.
+      const { data, error } = await (supabase as unknown as SafeBusinessListRpc).rpc(
+        "list_buyer_businesses",
+      );
 
       if (!active) return;
       if (error) {
@@ -62,17 +58,7 @@ export default function BuyerDashboard() {
         return;
       }
 
-      type SafeBusiness = Omit<AssignedBusiness, "access_level" | "ebitda" | "normalised_profit" | "address">;
-      type Row = { access_level: AccessLevel; business: SafeBusiness | null };
-      const mapped: AssignedBusiness[] = (data as unknown as Row[])
-        .filter((r) => r.business && r.business.status === "published")
-        .map((r) => ({
-          ...(r.business as SafeBusiness),
-          address: null,
-          ebitda: null,
-          normalised_profit: null,
-          access_level: r.access_level,
-        }));
+      const mapped: AssignedBusiness[] = (data ?? []).filter((b) => b.status === "published");
 
       setItems(mapped);
     })();
