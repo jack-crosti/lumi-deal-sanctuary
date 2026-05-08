@@ -29,6 +29,13 @@ interface AssignedBusiness {
   access_level: AccessLevel;
 }
 
+type SafeBusinessListRpc = {
+  rpc: (fn: "list_buyer_businesses") => Promise<{
+    data: AssignedBusiness[] | null;
+    error: { message: string } | null;
+  }>;
+};
+
 export default function BuyerDashboard() {
   const { user } = useAuth();
   const [items, setItems] = useState<AssignedBusiness[] | null>(null);
@@ -40,7 +47,9 @@ export default function BuyerDashboard() {
     (async () => {
       // Buyer-facing opportunity data is returned by a server-side RPC that
       // only exposes dashboard-safe fields and masks confidential columns.
-      const { data, error } = await supabase.rpc("list_buyer_businesses");
+      const { data, error } = await (supabase as unknown as SafeBusinessListRpc).rpc(
+        "list_buyer_businesses",
+      );
 
       if (!active) return;
       if (error) {
@@ -49,9 +58,7 @@ export default function BuyerDashboard() {
         return;
       }
 
-      const mapped: AssignedBusiness[] = (data as unknown as AssignedBusiness[]).filter(
-        (b) => b.status === "published",
-      );
+      const mapped: AssignedBusiness[] = (data ?? []).filter((b) => b.status === "published");
 
       setItems(mapped);
     })();
