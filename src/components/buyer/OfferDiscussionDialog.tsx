@@ -112,7 +112,7 @@ export default function OfferDiscussionDialog({
       return;
     }
     setSubmitting(true);
-    const { data: inserted, error } = await supabase
+    const { data: inserted, error: insertError } = await supabase
       .from("offer_interest")
       .insert({
         buyer_id: user.id,
@@ -138,11 +138,20 @@ export default function OfferDiscussionDialog({
         accountant_email: accountantEmail.trim() || null,
         additional_notes: additionalNotes.trim() || null,
         disclaimer_accepted: true,
-        status: "submitted",
-        submitted_at: new Date().toISOString(),
+        status: "draft",
       })
       .select("id")
       .single();
+    if (insertError || !inserted?.id) {
+      setSubmitting(false);
+      toast.error(insertError?.message ?? "Could not create offer discussion.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("offer_interest")
+      .update({ status: "submitted", submitted_at: new Date().toISOString() })
+      .eq("id", inserted.id);
     setSubmitting(false);
     if (error) {
       toast.error(error.message);
