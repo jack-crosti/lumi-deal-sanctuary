@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { toast } from "sonner";
+import { syncBuyerProfileAccess } from "@/lib/syncBuyerProfile";
 // Role is fetched server-side from user_roles after sign-in.
 
 type Mode = "signin" | "signup";
@@ -21,15 +22,22 @@ export default function Auth() {
     setBusy(true);
     try {
       if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+
+        const sync = await syncBuyerProfileAccess(signInData.session);
+        if (!sync.ok) {
+          toast.error(sync.message ?? "Access sync failed. Please contact your broker.");
+          return;
+        }
+
         toast.success("Welcome back.");
         // Resolve role from server (user_roles), then route accordingly.
         const { data: roleData } = await supabase.rpc("current_user_role");
         const dest = roleData === "admin" ? "/admin/dashboard" : "/buyer/dashboard";
         navigate(dest, { replace: true });
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -38,8 +46,19 @@ export default function Auth() {
           },
         });
         if (error) throw error;
-        toast.success("Account created. You may now sign in.");
-        setMode("signin");
+
+        if (signUpData.session) {
+          const sync = await syncBuyerProfileAccess(signUpData.session);
+          if (!sync.ok) {
+            toast.error(sync.message ?? "Access sync failed. Please contact your broker.");
+            return;
+          }
+          toast.success("Account created. Your private deal room is ready.");
+          navigate("/buyer/dashboard", { replace: true });
+        } else {
+          toast.success("Account created. Please check your email, then sign in.");
+          setMode("signin");
+        }
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
@@ -125,7 +144,7 @@ export default function Auth() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="lumi-input"
-                placeholder="••••••••••"
+                placeholder="••••••••"
                 autoComplete={mode === "signin" ? "current-password" : "new-password"}
               />
             </Field>
