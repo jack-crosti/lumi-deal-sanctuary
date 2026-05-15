@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { AppRole } from "@/lib/authRoles";
 import { logActivity } from "@/lib/activity";
+import { syncBuyerProfileAccess } from "@/lib/syncBuyerProfile";
 
 export type { AppRole };
 
@@ -27,6 +28,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRole(null);
         return;
       }
+
+      // First make sure a buyer who signs up with an existing pending email
+      // inherits the broker-created profile and any business access already granted.
+      await syncBuyerProfileAccess(s);
+
       // Server-truth role lookup. Falls back to 'buyer' on any error so
       // we never grant admin without a verified user_roles row.
       const { data, error } = await supabase.rpc("current_user_role");
@@ -44,8 +50,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         void resolveRole(newSession).finally(() => setLoading(false));
       }, 0);
       if (event === "SIGNED_IN" && newSession?.user) {
-        // Defer so RLS sees the new auth context
-        setTimeout(() => {
+        // Defer so RLS sees the new auth context and the pending profile has been claimed.
+        setTimeout(async () => {
+          await syncBuyerProfileAccess(newSession);
           void logActivity({ buyerId: newSession.user.id, event: "login" });
         }, 0);
       }
