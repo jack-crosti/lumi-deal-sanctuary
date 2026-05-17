@@ -19,6 +19,7 @@ declare
   v_pending public.profiles%rowtype;
   v_existing public.profiles%rowtype;
   v_access_count integer := 0;
+  v_ca_status public.ca_status := 'not_sent'::public.ca_status;
 begin
   if v_user is null then
     raise exception 'Not authenticated';
@@ -43,16 +44,23 @@ begin
   for update;
 
   if v_pending.id is not null then
+    v_ca_status := case
+      when v_existing.ca_status = 'approved' or v_pending.ca_status = 'approved' then 'approved'::public.ca_status
+      when v_existing.ca_status = 'signed' or v_pending.ca_status = 'signed' then 'signed'::public.ca_status
+      when v_existing.ca_status = 'sent' or v_pending.ca_status = 'sent' then 'sent'::public.ca_status
+      else 'not_sent'::public.ca_status
+    end;
+
     -- Move all dependent rows from the placeholder id to the real auth id.
-    update public.buyer_business_access
+    update public.buyer_business_access bba
        set buyer_id = v_user,
            updated_at = now()
-     where buyer_id = v_pending.id
+     where bba.buyer_id = v_pending.id
        and not exists (
          select 1
          from public.buyer_business_access existing
          where existing.buyer_id = v_user
-           and existing.business_id = buyer_business_access.business_id
+           and existing.business_id = bba.business_id
        );
     get diagnostics v_access_count = row_count;
 
@@ -65,14 +73,14 @@ begin
           and existing.business_id = p.business_id
       );
 
-    update public.document_access
+    update public.document_access da
        set buyer_id = v_user
-     where buyer_id = v_pending.id
+     where da.buyer_id = v_pending.id
        and not exists (
          select 1
          from public.document_access existing
          where existing.buyer_id = v_user
-           and existing.document_id = document_access.document_id
+           and existing.document_id = da.document_id
        );
 
     delete from public.document_access p
@@ -100,13 +108,13 @@ begin
              buyer_type = coalesce(profiles.buyer_type, v_pending.buyer_type),
              budget_min = coalesce(profiles.budget_min, v_pending.budget_min),
              budget_max = coalesce(profiles.budget_max, v_pending.budget_max),
-             finance_status = coalesce(profiles.finance_status, v_pending.finance_status, 'unknown'),
+             finance_status = coalesce(profiles.finance_status, v_pending.finance_status, 'unknown'::public.finance_status),
              hospitality_experience = coalesce(profiles.hospitality_experience, v_pending.hospitality_experience),
              preferred_business_type = coalesce(profiles.preferred_business_type, v_pending.preferred_business_type),
              preferred_location = coalesce(profiles.preferred_location, v_pending.preferred_location),
              owner_intent = coalesce(profiles.owner_intent, v_pending.owner_intent),
-             ca_status = greatest(profiles.ca_status::text, v_pending.ca_status::text)::public.ca_status,
-             buyer_status = coalesce(profiles.buyer_status, v_pending.buyer_status, 'active'),
+             ca_status = v_ca_status,
+             buyer_status = coalesce(profiles.buyer_status, v_pending.buyer_status, 'active'::public.buyer_status),
              admin_notes = coalesce(profiles.admin_notes, v_pending.admin_notes),
              is_pending = false,
              updated_at = now()
@@ -119,7 +127,10 @@ begin
              email = coalesce(email, v_email),
              full_name = coalesce(full_name, v_name),
              is_pending = false,
-             buyer_status = case when buyer_status = 'new' then 'active' else buyer_status end,
+             buyer_status = case
+               when buyer_status = 'new'::public.buyer_status then 'active'::public.buyer_status
+               else buyer_status
+             end,
              updated_at = now()
        where id = v_pending.id;
     end if;
@@ -136,9 +147,9 @@ begin
       v_user,
       v_email,
       v_name,
-      'active',
-      'not_sent',
-      'unknown',
+      'active'::public.buyer_status,
+      'not_sent'::public.ca_status,
+      'unknown'::public.finance_status,
       false
     );
   else
@@ -161,6 +172,19 @@ end;
 $$;
 
 grant execute on function public.claim_pending_buyer_profile() to authenticated;
+
+-- Remove duplicates before adding uniqueness protection.
+delete from public.buyer_business_access a
+using public.buyer_business_access b
+where a.buyer_id = b.buyer_id
+  and a.business_id = b.business_id
+  and a.created_at < b.created_at;
+
+delete from public.document_access a
+using public.document_access b
+where a.buyer_id = b.buyer_id
+  and a.document_id = b.document_id
+  and a.created_at < b.created_at;
 
 -- Keep duplicate business assignments from breaking buyer dashboards.
 create unique index if not exists buyer_business_access_unique_buyer_business
