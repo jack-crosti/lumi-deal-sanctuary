@@ -50,16 +50,26 @@ export function BusinessBuyerAccessManager({ businessId }: { businessId: string 
         .order("full_name", { ascending: true, nullsFirst: false }),
       supabase
         .from("buyer_business_access")
-        .select("id,buyer_id,access_level, buyer:profiles(id,email,first_name,last_name,full_name,company,is_pending)")
+        .select("id,buyer_id,access_level")
         .eq("business_id", businessId)
         .order("created_at", { ascending: false }),
     ]);
 
-    if (buyerRes.error) toast.error(buyerRes.error.message);
-    else setBuyers((buyerRes.data ?? []) as BuyerOption[]);
+    const buyerList = buyerRes.error ? [] : ((buyerRes.data ?? []) as BuyerOption[]);
+    const buyerById = new Map(buyerList.map((b) => [b.id, b]));
 
-    if (accessRes.error) toast.error(accessRes.error.message);
-    else setRows((accessRes.data ?? []) as unknown as AccessRow[]);
+    if (buyerRes.error) toast.error(buyerRes.error.message);
+    else setBuyers(buyerList);
+
+    if (accessRes.error) {
+      toast.error(accessRes.error.message);
+    } else {
+      const accessRows = (accessRes.data ?? []).map((row) => ({
+        ...(row as Omit<AccessRow, "buyer">),
+        buyer: buyerById.get(row.buyer_id) ?? null,
+      }));
+      setRows(accessRows);
+    }
   };
 
   useEffect(() => {
