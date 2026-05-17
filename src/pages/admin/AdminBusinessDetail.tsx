@@ -23,6 +23,7 @@ import BusinessOfferInterest from "@/components/admin/BusinessOfferInterest";
 import ActivityFeed from "@/components/admin/ActivityFeed";
 import PresentationStudio from "@/components/admin/PresentationStudio";
 import BusinessFinancials from "@/components/admin/BusinessFinancials";
+import { BusinessBuyerAccessManager } from "@/components/admin/BusinessBuyerAccessManager";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -208,10 +209,12 @@ export default function AdminBusinessDetail() {
             <Location b={b} />
           </TabsContent>
           <TabsContent value="buyer-access" className="mt-0">
-            <PlaceholderPanel
-              title="Buyer Access"
-              body="Assign approved buyers to this Information Memorandum and choose their access level: Teaser, IM, Financial, Serious, or Full DD."
-            />
+            {!isPublished && (
+              <div className="lumi-card p-5 mb-6 border-primary/30 bg-primary/5 text-sm text-muted-foreground">
+                This business is not published yet. Access can be granted now, but buyers will only see it once the listing status is Published.
+              </div>
+            )}
+            <BusinessBuyerAccessManager businessId={b.id} />
           </TabsContent>
           <TabsContent value="activity" className="mt-0">
             <ActivityFeed businessId={b.id} showFilters />
